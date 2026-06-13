@@ -1,0 +1,16 @@
+[
+  {
+    "trace_id": "tr-d40779212d",
+    "message": "Create a Helm-based deployment of cert-manager from the Jetstack Helm repo",
+    "response_length": 2961,
+    "actions_taken": [
+      "model_inference"
+    ],
+    "context_keys": [
+      "mode",
+      "product",
+      "capabilities"
+    ],
+    "timestamp": "2026-06-13T09:37:20Z"
+  }
+]

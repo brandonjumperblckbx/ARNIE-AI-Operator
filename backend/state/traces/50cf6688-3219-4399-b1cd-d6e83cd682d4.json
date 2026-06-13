@@ -1,0 +1,30 @@
+[
+  {
+    "trace_id": "tr-1f9359ae79",
+    "message": "Install the Grafana operator in namespace grafana. Add a wait after creating the namespace to ensure it's ready before creating the OperatorGroup.",
+    "response_length": 2746,
+    "actions_taken": [
+      "model_inference"
+    ],
+    "context_keys": [
+      "mode",
+      "product",
+      "capabilities"
+    ],
+    "timestamp": "2026-06-13T16:02:22Z"
+  },
+  {
+    "trace_id": "tr-150ef5e32e",
+    "message": "Install the Grafana operator in namespace grafana. Add a wait after creating the namespace to ensure it's ready before creating the OperatorGroup.",
+    "response_length": 3090,
+    "actions_taken": [
+      "model_inference"
+    ],
+    "context_keys": [
+      "mode",
+      "product",
+      "capabilities"
+    ],
+    "timestamp": "2026-06-13T15:51:28Z"
+  }
+]

@@ -581,6 +581,149 @@ async def startup():
 async def shutdown():
     await close_pool()
 
+# ════════════════════════════════════════════════════════════════════
+# Settings Endpoints —
+# ════════════════════════════════════════════════════════════════════
+
+import json as _json
+from pathlib import Path as _Path
+
+SETTINGS_PATH = _Path(STATE_DIR) / "settings.json"
+
+def _load_settings() -> Dict[str, Any]:
+    if SETTINGS_PATH.exists():
+        try:
+            with SETTINGS_PATH.open("r") as f:
+                return _json.load(f)
+        except Exception:
+            pass
+    return {}
+
+def _save_settings(data: Dict[str, Any]) -> None:
+    current = _load_settings()
+    current.update(data)
+    tmp = SETTINGS_PATH.with_suffix(".tmp")
+    with tmp.open("w") as f:
+        _json.dump(current, f, indent=2, default=str)
+    tmp.replace(SETTINGS_PATH)
+
+def _apply_settings():
+    """Apply saved settings to integration clients."""
+    s = _load_settings()
+
+    # GitHub
+    gh = s.get("github", {})
+    if gh.get("repo"):
+        github_pusher.token = gh.get("token", "")
+        github_pusher.repo = gh.get("repo", "")
+        github_pusher.branch = gh.get("branch", "main")
+        github_pusher.playbook_dir = gh.get("playbook_dir", "")
+
+    # AAP
+    aap = s.get("aap", {})
+    if aap.get("url"):
+        aap_client.base_url = aap.get("url", "").rstrip("/")
+        aap_client.token = aap.get("token", "")
+        aap_client.project_id = aap.get("project_id", "")
+        aap_client.job_template_id = aap.get("job_template_id", "")
+        aap_client.verify_ssl = aap.get("verify_ssl", False)
+
+
+@app.post("/settings/github")
+async def save_github_settings(request: dict):
+    """Save GitHub integration settings and test the connection."""
+    _save_settings({"github": {
+        "repo": request.get("repo", ""),
+        "token": request.get("token", ""),
+        "branch": request.get("branch", "main"),
+        "playbook_dir": request.get("playbook_dir", ""),
+    }})
+    _apply_settings()
+
+    # Test connection
+    status = await github_pusher.get_status()
+    return {
+        "saved": True,
+        "connected": status.get("connected", False),
+        "detail": status,
+        "timestamp": _utc_now(),
+    }
+
+
+@app.post("/settings/aap")
+async def save_aap_settings(request: dict):
+    """Save AAP integration settings and test the connection."""
+    _save_settings({"aap": {
+        "url": request.get("url", ""),
+        "token": request.get("token", ""),
+        "project_id": request.get("project_id", ""),
+        "job_template_id": request.get("job_template_id", ""),
+        "verify_ssl": request.get("verify_ssl", False),
+    }})
+    _apply_settings()
+
+    # Test connection
+    status = await aap_client.get_status()
+    return {
+        "saved": True,
+        "connected": status.get("connected", False),
+        "detail": status,
+        "timestamp": _utc_now(),
+    }
+
+
+@app.post("/settings/cluster")
+async def save_cluster_settings(request: dict):
+    """Save cluster connection settings."""
+    _save_settings({"cluster": {
+        "url": request.get("url", ""),
+        "token": request.get("token", ""),
+        "verify_ssl": request.get("verify_ssl", False),
+    }})
+    return {"saved": True, "timestamp": _utc_now()}
+
+
+@app.post("/settings/ai")
+async def save_ai_settings(request: dict):
+    """Save AI engine settings."""
+    _save_settings({"ai": {
+        "provider": request.get("provider", "ollama"),
+        "ollama_url": request.get("ollama_url", "http://localhost:11434"),
+        "model": request.get("model", "llama3.1:8b"),
+        "claude_key": request.get("claude_key", ""),
+        "fallback": request.get("fallback", True),
+    }})
+    return {"saved": True, "timestamp": _utc_now()}
+
+
+@app.get("/settings")
+async def get_settings():
+    """Get current settings (tokens masked)."""
+    s = _load_settings()
+    # Mask sensitive fields
+    if s.get("github", {}).get("token"):
+        t = s["github"]["token"]
+        s["github"]["token"] = t[:4] + "•" * (len(t) - 8) + t[-4:] if len(t) > 8 else "••••"
+    if s.get("aap", {}).get("token"):
+        t = s["aap"]["token"]
+        s["aap"]["token"] = t[:4] + "•" * (len(t) - 8) + t[-4:] if len(t) > 8 else "••••"
+    if s.get("cluster", {}).get("token"):
+        t = s["cluster"]["token"]
+        s["cluster"]["token"] = t[:4] + "•" * (len(t) - 8) + t[-4:] if len(t) > 8 else "••••"
+    if s.get("ai", {}).get("claude_key"):
+        t = s["ai"]["claude_key"]
+        s["ai"]["claude_key"] = t[:7] + "•" * (len(t) - 11) + t[-4:] if len(t) > 11 else "••••"
+    return {"settings": s, "timestamp": _utc_now()}
+
+
+# ── Load saved settings on startup ──
+@app.on_event("startup")
+async def load_saved_settings():
+    try:
+        _apply_settings()
+        log.info("Saved settings applied")
+    except Exception as e:
+        log.warning("Could not load saved settings: %s", e)
 
 if __name__ == "__main__":
     import uvicorn

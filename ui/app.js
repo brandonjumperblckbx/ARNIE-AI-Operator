@@ -230,9 +230,9 @@ function appendPlaybookMessage(data) {
             <div style="font-size:13px;color:var(--text-secondary);margin:8px 0;">
                 <strong>Blast Radius:</strong> ${blastSummary} &nbsp;|&nbsp; <strong>Validation:</strong> ${validation}
             </div>
-            <div class="approval-bar">
-                <button class="btn btn-approve" onclick="approvePlaybook('${pb.approval_id}')">✓ Approve & Deploy</button>
-                <button class="btn btn-edit" onclick="openEditModal('${pb.approval_id}', ${JSON.stringify(JSON.stringify(pb.yaml_content))})">Edit</button>
+       <div class="approval-bar">
+                <button class="${!pb.validation?.valid ? 'btn btn-approve has-issues' : 'btn btn-approve'}" onclick="approvePlaybook('${pb.approval_id}')">${!pb.validation?.valid ? '⚠ Approve Anyway' : '✓ Approve & Deploy'}</button>
+                <button class="${!pb.validation?.valid ? 'btn btn-edit suggested' : 'btn btn-edit'}" onclick="viewApprovalEdit('${pb.approval_id}')">Edit</button>
                 <button class="btn btn-reject" onclick="rejectPlaybook('${pb.approval_id}')">Reject</button>
             </div>
         </div>`;
@@ -682,9 +682,7 @@ async function saveSettings(section) {
         const token = document.getElementById('settingsGithubToken').value;
         const branch = document.getElementById('settingsGithubBranch').value;
         const dir = document.getElementById('settingsGithubDir').value;
-
         if (statusEl) { statusEl.textContent = 'Testing...'; statusEl.className = 'form-status'; }
-
         try {
             const resp = await fetch(`${API_BASE}/settings/github`, {
                 method: 'POST',
@@ -709,9 +707,7 @@ async function saveSettings(section) {
         const projectId = document.getElementById('settingsAapProject').value;
         const templateId = document.getElementById('settingsAapTemplate').value;
         const verifySsl = document.getElementById('settingsAapVerifySsl').checked;
-
         if (statusEl) { statusEl.textContent = 'Testing...'; statusEl.className = 'form-status'; }
-
         try {
             const resp = await fetch(`${API_BASE}/settings/aap`, {
                 method: 'POST',
@@ -739,7 +735,6 @@ async function saveSettings(section) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ provider, model }),
             });
-            // Update the header model selector
             document.getElementById('modelSelect').value = provider === 'claude' ? 'claude' : model;
             alert('AI engine updated');
         } catch (e) { alert(`Save failed: ${e.message}`); }
@@ -750,8 +745,362 @@ async function saveSettings(section) {
     }
 }
 
+
 // ── Init auth check ──
 document.addEventListener('DOMContentLoaded', () => {
     // Dev mode: skip login if backend doesn't support auth
     checkAuth();
 });
+
+// ══════════════════════════════════════════
+// Conversation History
+// ══════════════════════════════════════════
+
+let conversations = JSON.parse(localStorage.getItem('arnie_conversations') || '[]');
+let activeConversationId = null;
+
+function newChat() {
+    // Save current conversation if it has messages
+    if (conversationId && messagesEl.children.length > 0) {
+        saveConversation();
+    }
+
+    // Reset state
+    conversationId = null;
+    activeConversationId = null;
+    messagesEl.innerHTML = '';
+    messagesEl.classList.remove('active');
+    welcomeScreen.style.display = 'flex';
+    chatInput.value = '';
+    chatInput.focus();
+    renderConversations();
+}
+
+function saveConversation() {
+    if (!conversationId) return;
+
+    // Get first user message as title
+    const firstUserMsg = messagesEl.querySelector('.message.user .message-body');
+    const title = firstUserMsg ? firstUserMsg.textContent.trim().slice(0, 50) : 'New conversation';
+
+    // Count playbooks in this conversation
+    const playbookCount = messagesEl.querySelectorAll('.playbook-block').length;
+
+    const existing = conversations.findIndex(c => c.id === conversationId);
+    const conv = {
+        id: conversationId,
+        title: title,
+        playbooks: playbookCount,
+        updated: new Date().toISOString(),
+        messageCount: messagesEl.querySelectorAll('.message').length,
+    };
+
+    if (existing >= 0) {
+        conversations[existing] = conv;
+    } else {
+        conversations.unshift(conv);
+    }
+
+    // Keep last 20 conversations
+    conversations = conversations.slice(0, 20);
+    localStorage.setItem('arnie_conversations', JSON.stringify(conversations));
+    renderConversations();
+}
+
+function renderConversations() {
+    const list = document.getElementById('conversationsList');
+    if (!list) return;
+
+    if (!conversations.length) {
+        list.innerHTML = '<div class="sidebar-empty">Start a conversation</div>';
+        return;
+    }
+
+    list.innerHTML = conversations.map(c => {
+        const isActive = c.id === conversationId;
+        const time = formatTimeAgo(c.updated);
+        const iconClass = isActive ? 'conv-icon active-conv' : 'conv-icon';
+
+        return `
+            <div class="sidebar-item ${isActive ? 'active' : ''}" onclick="loadConversation('${c.id}')">
+                <div class="conv-item">
+                    <div class="${iconClass}">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    </div>
+                    <div class="conv-details">
+                        <div class="conv-title">${escapeHtml(c.title)}</div>
+                        <div class="conv-meta">
+                            <span>${time}</span>
+                            ${c.playbooks ? `<span class="conv-playbook-count"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>${c.playbooks}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+}
+
+function loadConversation(convId) {
+    // Save current conversation first
+    if (conversationId && messagesEl.children.length > 0) {
+        saveConversation();
+    }
+
+    conversationId = convId;
+    activeConversationId = convId;
+    welcomeScreen.style.display = 'none';
+    messagesEl.classList.add('active');
+
+    // Load from backend if available
+    fetch(`${API_BASE}/ai/conversations/${convId}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+            if (data && data.recent_turns) {
+                messagesEl.innerHTML = '';
+                data.recent_turns.forEach(turn => {
+                    appendMessage(turn.role === 'user' ? 'user' : 'agent', turn.content);
+                });
+            }
+            renderConversations();
+        })
+        .catch(() => {
+            renderConversations();
+        });
+}
+
+function formatTimeAgo(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+    return date.toLocaleDateString();
+}
+
+// ── Update sendMessage to save conversations ──
+const originalSendMessage = sendMessage;
+sendMessage = async function() {
+    await originalSendMessage();
+    saveConversation();
+};
+
+// ── Update loadApprovals to show count badge ──
+const originalLoadApprovals = loadApprovals;
+loadApprovals = async function() {
+    await originalLoadApprovals();
+    try {
+        const resp = await fetch(`${API_BASE}/ai/approvals`);
+        if (resp.ok) {
+            const data = await resp.json();
+            const countEl = document.getElementById('approvalCount');
+            if (countEl) {
+                const pending = (data.approvals || []).filter(a => a.status === 'pending_approval').length;
+                countEl.textContent = pending;
+                countEl.style.display = pending > 0 ? 'inline' : 'none';
+            }
+        }
+    } catch(e) {}
+};
+
+// ── Init conversations on load ──
+document.addEventListener('DOMContentLoaded', () => {
+    renderConversations();
+});
+
+// ══════════════════════════════════════════
+// Approval Click → Preview Modal
+// ══════════════════════════════════════════
+
+async function viewApproval(approvalId) {
+    try {
+        const resp = await fetch(`${API_BASE}/ai/approvals/${approvalId}`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const approval = await resp.json();
+
+        const modal = document.getElementById('playbookModal');
+        const title = document.getElementById('modalTitle');
+        const playbook = document.getElementById('modalPlaybook');
+        const meta = document.getElementById('modalMeta');
+        const actions = document.getElementById('modalActions');
+
+        title.textContent = approval.intent?.slice(0, 60) || 'Playbook Preview';
+        playbook.contentEditable = false;
+        playbook.textContent = approval.yaml_content || 'No YAML content';
+
+        // Build meta info
+        const riskClass = approval.risk_level || 'medium';
+        const statusLabel = (approval.status || 'unknown').replace(/_/g, ' ');
+        const blastSummary = approval.blast_radius?.summary || 'N/A';
+        const validLabel = approval.validation?.valid ? '✅ Passed' : '❌ Issues found';
+        const createdAt = approval.created_at?.slice(0, 19).replace('T', ' ') || '';
+        const approvedBy = approval.approved_by || '';
+        const approvedAt = approval.approved_at?.slice(0, 19).replace('T', ' ') || '';
+
+        let metaHtml = `
+            <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;">
+                <div><span style="color:var(--text-muted);font-size:11px;">STATUS</span><br>
+                    <span class="playbook-row-status ${approval.status === 'pending_approval' ? 'pending' : approval.status}" style="display:inline-block;margin-top:4px;">${statusLabel}</span>
+                </div>
+                <div><span style="color:var(--text-muted);font-size:11px;">RISK</span><br>
+                    <span class="risk-badge ${riskClass}" style="margin-top:4px;">${riskClass.toUpperCase()}</span>
+                </div>
+                <div><span style="color:var(--text-muted);font-size:11px;">BLAST RADIUS</span><br>
+                    <span style="font-size:12px;color:var(--text-secondary);margin-top:4px;display:inline-block;">${blastSummary}</span>
+                </div>
+                <div><span style="color:var(--text-muted);font-size:11px;">VALIDATION</span><br>
+                    <span style="font-size:12px;margin-top:4px;display:inline-block;">${validLabel}</span>
+                </div>
+            </div>
+            <div style="margin-top:12px;font-size:11px;color:var(--text-muted);">
+                Created: ${createdAt}
+                ${approvedBy ? ` · Approved by: ${approvedBy} at ${approvedAt}` : ''}
+            </div>`;
+
+        // GitHub push info
+        if (approval.github_push) {
+            metaHtml += `<div style="margin-top:8px;font-size:11px;color:var(--success);">
+                📦 Pushed to ${approval.github_push.repo} — commit ${approval.github_push.commit_sha?.slice(0, 8) || ''}
+            </div>`;
+        }
+
+        // AAP execution info
+        if (approval.aap_execution) {
+            metaHtml += `<div style="margin-top:4px;font-size:11px;color:var(--success);">
+                🚀 AAP job ${approval.aap_execution.job_id} — ${approval.aap_execution.status || 'launched'}
+            </div>`;
+        }
+
+        meta.innerHTML = metaHtml;
+
+        // Build action buttons based on status
+        let actionsHtml = '';
+        if (approval.status === 'pending_approval') {
+            const hasIssues = !approval.validation?.valid;
+            const approveClass = hasIssues ? 'btn btn-approve has-issues' : 'btn btn-approve';
+            const approveLabel = hasIssues ? '⚠ Approve Anyway' : '✓ Approve & Deploy';
+
+            actionsHtml = `
+                <button class="${approveClass}" onclick="closeModal(); approvePlaybook('${approvalId}')">${approveLabel}</button>
+                <button class="${hasIssues ? 'btn btn-edit suggested' : 'btn btn-edit'}" onclick="closeModal(); viewApprovalEdit('${approvalId}')">Edit</button>
+                <button class="btn btn-reject" onclick="closeModal(); rejectPlaybook('${approvalId}')">Reject</button>`;
+        } else if (approval.status === 'approved' && !approval.github_push) {
+            actionsHtml = `<button class="btn btn-approve" onclick="closeModal(); approvePlaybook('${approvalId}')">Push to GitHub</button>`;
+        } else {
+            actionsHtml = `<button class="btn btn-edit" onclick="closeModal()">Close</button>`;
+        }
+
+        actions.innerHTML = actionsHtml;
+        modal.classList.add('active');
+
+    } catch (err) {
+        console.error('Failed to load approval:', err);
+    }
+}
+
+// ══════════════════════════════════════════
+// Update Sidebar Approvals to use viewApproval
+// ══════════════════════════════════════════
+
+// Override loadApprovals to use viewApproval onclick
+const _origLoadApprovals = loadApprovals;
+loadApprovals = async function() {
+    try {
+        const resp = await fetch(`${API_BASE}/ai/approvals`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+
+        const countEl = document.getElementById('approvalCount');
+        const pending = (data.approvals || []).filter(a => a.status === 'pending_approval').length;
+        if (countEl) {
+            countEl.textContent = pending;
+            countEl.style.display = pending > 0 ? 'inline' : 'none';
+        }
+
+        if (!data.approvals?.length) {
+            approvalsList.innerHTML = '<div class="sidebar-empty">No pending approvals</div>';
+            return;
+        }
+
+        approvalsList.innerHTML = data.approvals.slice(0, 10).map(a => {
+            const cls = a.status === 'pending_approval' ? 'pending' :
+                       a.status === 'approved' || a.status === 'executed' ? 'approved' : 'failed';
+            return `
+                <div class="sidebar-item ${cls}" onclick="viewApproval('${a.id}')">
+                    <div class="sidebar-item-title">${(a.intent || a.playbook_id || '').slice(0, 40)}</div>
+                    <div class="sidebar-item-meta">${(a.status || '').replace(/_/g, ' ')} · ${a.risk_level || 'medium'}</div>
+                </div>`;
+        }).join('');
+    } catch (e) {}
+};
+
+// ══════════════════════════════════════════
+// Playbooks Tab — Full History
+// ══════════════════════════════════════════
+
+async function loadPlaybooks() {
+    const table = document.getElementById('playbooksTable');
+    try {
+        const resp = await fetch(`${API_BASE}/ai/approvals`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+
+        if (!data.approvals?.length) {
+            table.innerHTML = '<div class="table-empty">No playbooks generated yet. Start a conversation to create one.</div>';
+            return;
+        }
+
+        table.innerHTML = `
+            <div class="playbooks-header">
+                <span class="ph-name">Playbook</span>
+                <span class="ph-status">Status</span>
+                <span class="ph-risk">Risk</span>
+                <span class="ph-git">Git</span>
+                <span class="ph-time">Time</span>
+            </div>` +
+            data.approvals.map(a => {
+                const statusClass = a.status === 'pending_approval' ? 'pending' :
+                                   a.status === 'approved' || a.status === 'executed' ? 'approved' :
+                                   a.status === 'rejected' ? 'rejected' : 'expired';
+                const statusLabel = (a.status || '').replace(/_/g, ' ');
+                const gitIcon = a.github_push ? '✓' : '—';
+                const gitClass = a.github_push ? 'color:var(--success)' : 'color:var(--text-muted)';
+                const time = a.created_at?.slice(11, 16) || '';
+
+                return `
+                    <div class="playbook-row" onclick="viewApproval('${a.id}')">
+                        <span class="playbook-row-name">${(a.intent || a.file_name || 'Untitled').slice(0, 55)}</span>
+                        <span class="playbook-row-status ${statusClass}">${statusLabel}</span>
+                        <span class="risk-badge ${a.risk_level || 'medium'}">${(a.risk_level || 'medium').toUpperCase()}</span>
+                        <span style="font-size:13px;${gitClass};text-align:center;width:40px;">${gitIcon}</span>
+                        <span class="playbook-row-time">${time}</span>
+                    </div>`;
+            }).join('');
+
+    } catch (e) {
+        table.innerHTML = '<div class="table-empty">Unable to load playbooks.</div>';
+    }
+}
+    document.getElementById('modelSelect').addEventListener('change', async function() {
+        const value = this.value;
+        const provider = value === 'claude' || value === 'codex' ? value : 'ollama';
+        const model = provider === 'ollama' ? value : undefined;
+        try {
+            await fetch(`${API_BASE}/ai/models/provider`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ provider, model }),
+            });
+        } catch(e) { console.warn('Provider switch failed:', e); }
+    });
+
+async function viewApprovalEdit(approvalId) {
+    try {
+        const resp = await fetch(`${API_BASE}/ai/approvals/${approvalId}`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        openEditModal(approvalId, data.yaml_content || '');
+    } catch(e) { console.error(e); }
+}

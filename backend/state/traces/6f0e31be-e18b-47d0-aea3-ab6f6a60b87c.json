@@ -1,0 +1,16 @@
+[
+  {
+    "trace_id": "tr-376a7d95c6",
+    "message": "Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and configure a datasource pointing to OpenShift Prometheus at https://thanos-querier.openshift-monitorin",
+    "response_length": 377,
+    "actions_taken": [
+      "model_fallback"
+    ],
+    "context_keys": [
+      "mode",
+      "product",
+      "capabilities"
+    ],
+    "timestamp": "2026-06-13T08:22:54Z"
+  }
+]

@@ -2,6 +2,586 @@
   "approvals": [
     {
       "aap_execution": null,
+      "approved_at": "2026-06-13T16:02:45Z",
+      "approved_by": "operator",
+      "blast_radius": {
+        "cluster_scoped": true,
+        "deletions": 0,
+        "estimated_resources": 3,
+        "namespaces": [
+          "grafana"
+        ],
+        "resource_kinds": [
+          "namespace",
+          "deployment",
+          "service"
+        ],
+        "summary": "3 resource type(s), 1 namespace(s), cluster-scoped changes"
+      },
+      "conversation_id": "50cf6688-3219-4399-b1cd-d6e83cd682d4",
+      "created_at": "2026-06-13T16:02:34Z",
+      "edit_history": [],
+      "expires_at": "2026-06-13T20:02:34Z",
+      "file_name": "install-the-grafana-operator-in-namespace-grafana.yml",
+      "github_push": {
+        "branch": "main",
+        "commit_sha": "d87e6194ee2273a0c0a23a6b782ef05b7c623892",
+        "commit_url": "https://github.com/brandonjumperblckbx/aap-playbooks/commit/d87e6194ee2273a0c0a23a6b782ef05b7c623892",
+        "created": true,
+        "file_path": "install-the-grafana-operator-in-namespace-grafana.yml",
+        "repo": "brandonjumperblckbx/aap-playbooks",
+        "timestamp": "2026-06-13T16:02:46Z",
+        "updated": false
+      },
+      "id": "apv-90800bcab369",
+      "intent": "Install the Grafana operator in namespace grafana. Add a wait after creating the namespace to ensure it's ready before creating the OperatorGroup.",
+      "playbook_id": "pb-4650c0c5da03",
+      "rejection": null,
+      "requested_by": "operator",
+      "risk_level": "medium",
+      "status": "approved",
+      "updated_at": "2026-06-13T16:02:46Z",
+      "validation": {
+        "checks_run": [
+          "yaml_syntax",
+          "ansible_structure",
+          "security_scan",
+          "best_practices"
+        ],
+        "issues": [],
+        "valid": true,
+        "warnings": [
+          {
+            "check": "best_practices",
+            "message": "Consider adding 'gather_facts: false' for localhost plays",
+            "severity": "info"
+          },
+          {
+            "check": "best_practices",
+            "message": "No tags defined \u2014 consider adding tags for selective execution",
+            "severity": "info"
+          }
+        ]
+      },
+      "yaml_content": "---\n- name: Install Grafana operator in grafana namespace\n  hosts: localhost\n  connection: local\n  tasks:\n    - name: Create grafana namespace\n      kubernetes.core.k8s:\n        name: grafana\n        api_version: v1\n        kind: Namespace\n        state: present\n\n    - name: Wait for namespace to be ready\n      kubernetes.core.k8s_info:\n        api_version: v1\n        kind: Namespace\n        name: grafana\n        wait: true\n        wait_condition:\n          type: Active\n          status: \"True\"\n        wait_timeout: 60\n\n    - name: Create OperatorGroup for Grafana operator\n      kubernetes.core.k8s:\n        definition:\n          apiVersion: operators.coreos.com/v1\n          kind: OperatorGroup\n          metadata:\n            name: grafana-operator-group\n            namespace: grafana\n          spec:\n            targetNamespaces:\n              - grafana\n        state: present\n\n    - name: Create Subscription for Grafana operator\n      kubernetes.core.k8s:\n        definition:\n          apiVersion: operators.coreos.com/v1alpha1\n          kind: Subscription\n          metadata:\n            name: grafana-operator\n            namespace: grafana\n          spec:\n            channel: v5\n            name: grafana-operator\n            source: community-operators\n            sourceNamespace: openshift-marketplace\n        state: present\n\n    - name: Wait for Grafana operator to be installed\n      kubernetes.core.k8s_info:\n        api_version: operators.coreos.com/v1alpha1\n        kind: ClusterServiceVersion\n        namespace: grafana\n        label_selectors:\n          - \"operators.coreos.com/grafana-operator.grafana\"\n        wait: true\n        wait_condition:\n          type: Succeeded\n          status: \"True\"\n        wait_timeout: 300\n\n    - name: Verify Grafana operator deployment is ready\n      kubernetes.core.k8s_info:\n        api_version: apps/v1\n        kind: Deployment\n        namespace: grafana\n        label_selectors:\n          - \"control-plane=controller-manager\"\n        wait: true\n        wait_condition:\n          type: Available\n          status: \"True\"\n        wait_timeout: 180"
+    },
+    {
+      "aap_execution": null,
+      "approved_at": null,
+      "approved_by": null,
+      "blast_radius": {
+        "cluster_scoped": true,
+        "deletions": 0,
+        "estimated_resources": 3,
+        "namespaces": [
+          "grafana"
+        ],
+        "resource_kinds": [
+          "namespace",
+          "deployment",
+          "service"
+        ],
+        "summary": "3 resource type(s), 1 namespace(s), cluster-scoped changes"
+      },
+      "conversation_id": "1da30c2f-cb5f-40df-9439-58501c8c0a7e",
+      "created_at": "2026-06-13T15:52:54Z",
+      "edit_history": [],
+      "expires_at": "2026-06-13T19:52:54Z",
+      "file_name": "install-the-grafana-operator-in-namespace-grafana.yml",
+      "github_push": null,
+      "id": "apv-cd291607db1f",
+      "intent": "Install the Grafana operator in namespace grafana. Add a wait after creating the namespace to ensure it's ready before creating the OperatorGroup.",
+      "playbook_id": "pb-2a2b4b719018",
+      "rejection": null,
+      "requested_by": "operator",
+      "risk_level": "medium",
+      "status": "pending_approval",
+      "updated_at": "2026-06-13T15:52:54Z",
+      "validation": {
+        "checks_run": [
+          "yaml_syntax",
+          "ansible_structure",
+          "security_scan",
+          "best_practices"
+        ],
+        "issues": [],
+        "valid": true,
+        "warnings": [
+          {
+            "check": "best_practices",
+            "message": "No tags defined \u2014 consider adding tags for selective execution",
+            "severity": "info"
+          }
+        ]
+      },
+      "yaml_content": "---\n- name: Install Grafana operator in grafana namespace\n  hosts: localhost\n  connection: local\n  gather_facts: false\n  tasks:\n    - name: Create grafana namespace\n      kubernetes.core.k8s:\n        name: grafana\n        api_version: v1\n        kind: Namespace\n        state: present\n\n    - name: Wait for grafana namespace to be ready\n      kubernetes.core.k8s_info:\n        api_version: v1\n        kind: Namespace\n        name: grafana\n        wait: true\n        wait_condition:\n          type: Ready\n          status: \"True\"\n        wait_timeout: 60\n\n    - name: Create OperatorGroup for Grafana operator\n      kubernetes.core.k8s:\n        definition:\n          apiVersion: operators.coreos.com/v1\n          kind: OperatorGroup\n          metadata:\n            name: grafana-operatorgroup\n            namespace: grafana\n          spec:\n            targetNamespaces:\n              - grafana\n        state: present\n      register: operatorgroup_result\n\n    - name: Create Subscription for Grafana operator\n      kubernetes.core.k8s:\n        definition:\n          apiVersion: operators.coreos.com/v1alpha1\n          kind: Subscription\n          metadata:\n            name: grafana-operator\n            namespace: grafana\n          spec:\n            channel: v4\n            name: grafana-operator\n            source: community-operators\n            sourceNamespace: openshift-marketplace\n        state: present\n      register: subscription_result\n\n    - name: Wait for Grafana operator to be installed\n      kubernetes.core.k8s_info:\n        api_version: apps/v1\n        kind: Deployment\n        namespace: grafana\n        label_selectors:\n          - \"app.kubernetes.io/name=grafana-operator\"\n        wait: true\n        wait_condition:\n          type: Available\n          status: \"True\"\n        wait_timeout: 300\n\n    - name: Verify operator installation\n      kubernetes.core.k8s_info:\n        api_version: operators.coreos.com/v1alpha1\n        kind: ClusterServiceVersion\n        namespace: grafana\n        label_selectors:\n          - \"operators.coreos.com/grafana-operator.grafana\"\n      register: csv_check\n\n    - name: Display operator status\n      debug:\n        msg: \"Grafana operator installed successfully\"\n      when: csv_check.resources | length > 0"
+    },
+    {
+      "aap_execution": null,
+      "approved_at": "2026-06-13T15:52:51Z",
+      "approved_by": "operator",
+      "blast_radius": {
+        "cluster_scoped": true,
+        "deletions": 0,
+        "estimated_resources": 3,
+        "namespaces": [
+          "grafana"
+        ],
+        "resource_kinds": [
+          "namespace",
+          "deployment",
+          "service"
+        ],
+        "summary": "3 resource type(s), 1 namespace(s), cluster-scoped changes"
+      },
+      "conversation_id": "50cf6688-3219-4399-b1cd-d6e83cd682d4",
+      "created_at": "2026-06-13T15:51:39Z",
+      "edit_history": [],
+      "expires_at": "2026-06-13T19:51:39Z",
+      "file_name": "install-the-grafana-operator-in-namespace-grafana.yml",
+      "github_push": null,
+      "id": "apv-df547dabcf2d",
+      "intent": "Install the Grafana operator in namespace grafana. Add a wait after creating the namespace to ensure it's ready before creating the OperatorGroup.",
+      "playbook_id": "pb-575b2fff6729",
+      "rejection": null,
+      "requested_by": "operator",
+      "risk_level": "medium",
+      "status": "approved",
+      "updated_at": "2026-06-13T15:52:51Z",
+      "validation": {
+        "checks_run": [
+          "yaml_syntax",
+          "ansible_structure",
+          "security_scan",
+          "best_practices"
+        ],
+        "issues": [],
+        "valid": true,
+        "warnings": [
+          {
+            "check": "best_practices",
+            "message": "Consider adding 'gather_facts: false' for localhost plays",
+            "severity": "info"
+          },
+          {
+            "check": "best_practices",
+            "message": "No tags defined \u2014 consider adding tags for selective execution",
+            "severity": "info"
+          }
+        ]
+      },
+      "yaml_content": "---\n- name: Install Grafana operator in grafana namespace\n  hosts: localhost\n  connection: local\n  tasks:\n    - name: Create grafana namespace\n      kubernetes.core.k8s:\n        name: grafana\n        api_version: v1\n        kind: Namespace\n        state: present\n\n    - name: Wait for namespace to be ready\n      kubernetes.core.k8s_info:\n        api_version: v1\n        kind: Namespace\n        name: grafana\n        wait: true\n        wait_condition:\n          type: Active\n          status: \"True\"\n        wait_timeout: 60\n\n    - name: Create OperatorGroup for Grafana operator\n      kubernetes.core.k8s:\n        definition:\n          apiVersion: operators.coreos.com/v1\n          kind: OperatorGroup\n          metadata:\n            name: grafana-operator-group\n            namespace: grafana\n          spec:\n            targetNamespaces:\n              - grafana\n        state: present\n\n    - name: Create Subscription for Grafana operator\n      kubernetes.core.k8s:\n        definition:\n          apiVersion: operators.coreos.com/v1alpha1\n          kind: Subscription\n          metadata:\n            name: grafana-operator\n            namespace: grafana\n          spec:\n            channel: v4\n            name: grafana-operator\n            source: community-operators\n            sourceNamespace: openshift-marketplace\n        state: present\n\n    - name: Wait for Grafana operator to be installed\n      kubernetes.core.k8s_info:\n        api_version: operators.coreos.com/v1alpha1\n        kind: ClusterServiceVersion\n        namespace: grafana\n        label_selectors:\n          - \"operators.coreos.com/grafana-operator.grafana\"\n        wait: true\n        wait_condition:\n          type: Succeeded\n          status: \"True\"\n        wait_timeout: 300\n\n    - name: Verify Grafana operator deployment\n      kubernetes.core.k8s_info:\n        api_version: apps/v1\n        kind: Deployment\n        namespace: grafana\n        label_selectors:\n          - \"app.kubernetes.io/name=grafana-operator\"\n      register: grafana_operator_deployment\n\n    - name: Confirm operator is running\n      ansible.builtin.assert:\n        that:\n          - grafana_operator_deployment.resources | length > 0\n          - grafana_operator_deployment.resources[0].status.readyReplicas | default(0) > 0\n        fail_msg: \"Grafana operator deployment is not ready\"\n        success_msg: \"Grafana operator is successfully installed and running\""
+    },
+    {
+      "aap_execution": null,
+      "approved_at": "2026-06-13T10:45:46Z",
+      "approved_by": "operator",
+      "blast_radius": {
+        "cluster_scoped": true,
+        "deletions": 0,
+        "estimated_resources": 2,
+        "namespaces": [
+          "cert-manager",
+          "false"
+        ],
+        "resource_kinds": [
+          "namespace",
+          "deployment"
+        ],
+        "summary": "2 resource type(s), 2 namespace(s), cluster-scoped changes"
+      },
+      "conversation_id": "dc9fb93d-a88e-41ab-b4e7-96a6a26820a2",
+      "created_at": "2026-06-13T09:37:30Z",
+      "edit_history": [],
+      "expires_at": "2026-06-13T13:37:30Z",
+      "file_name": "create-a-helm-based-deployment-of-cert-manager-fro.yml",
+      "github_push": {
+        "branch": "main",
+        "commit_sha": "a88158a9d0e7ab7eb17d65ad9ef51397a28802a3",
+        "commit_url": "https://github.com/brandonjumperblckbx/aap-playbooks/commit/a88158a9d0e7ab7eb17d65ad9ef51397a28802a3",
+        "created": true,
+        "file_path": "create-a-helm-based-deployment-of-cert-manager-fro.yml",
+        "repo": "brandonjumperblckbx/aap-playbooks",
+        "timestamp": "2026-06-13T10:45:46Z",
+        "updated": false
+      },
+      "id": "apv-6b011255605b",
+      "intent": "Create a Helm-based deployment of cert-manager from the Jetstack Helm repo",
+      "playbook_id": "pb-fb213c552609",
+      "rejection": null,
+      "requested_by": "operator",
+      "risk_level": "medium",
+      "status": "approved",
+      "updated_at": "2026-06-13T10:45:46Z",
+      "validation": {
+        "checks_run": [
+          "yaml_syntax",
+          "ansible_structure",
+          "security_scan",
+          "best_practices"
+        ],
+        "issues": [],
+        "valid": true,
+        "warnings": [
+          {
+            "check": "best_practices",
+            "message": "No tags defined \u2014 consider adding tags for selective execution",
+            "severity": "info"
+          }
+        ]
+      },
+      "yaml_content": "---\n- name: Deploy cert-manager using Helm\n  hosts: localhost\n  connection: local\n  gather_facts: false\n  \n  tasks:\n    - name: Add Jetstack Helm repository\n      kubernetes.core.helm_repository:\n        name: jetstack\n        repo_url: https://charts.jetstack.io\n        state: present\n\n    - name: Update Helm repository cache\n      kubernetes.core.helm_repository:\n        name: jetstack\n        repo_url: https://charts.jetstack.io\n        force_update: true\n\n    - name: Create cert-manager namespace\n      kubernetes.core.k8s:\n        name: cert-manager\n        api_version: v1\n        kind: Namespace\n        state: present\n\n    - name: Deploy cert-manager using Helm\n      kubernetes.core.helm:\n        name: cert-manager\n        chart_ref: jetstack/cert-manager\n        release_namespace: cert-manager\n        create_namespace: false\n        values:\n          installCRDs: true\n        state: present\n        wait: true\n        wait_condition:\n          type: Ready\n          status: \"True\"\n        wait_timeout: 600\n      register: cert_manager_deployment\n\n    - name: Verify cert-manager pods are running\n      kubernetes.core.k8s_info:\n        api_version: v1\n        kind: Pod\n        namespace: cert-manager\n        label_selectors:\n          - app.kubernetes.io/instance=cert-manager\n        wait: true\n        wait_condition:\n          type: Ready\n          status: \"True\"\n        wait_sleep: 10\n        wait_timeout: 300\n\n    - name: Verify cert-manager CRDs are installed\n      kubernetes.core.k8s_info:\n        api_version: apiextensions.k8s.io/v1\n        kind: CustomResourceDefinition\n        name: certificates.cert-manager.io\n      register: cert_crd_check\n\n    - name: Confirm cert-manager deployment success\n      debug:\n        msg: \"cert-manager successfully deployed in namespace cert-manager\"\n      when: cert_crd_check.resources | length > 0"
+    },
+    {
+      "aap_execution": null,
+      "approved_at": "2026-06-13T08:48:19Z",
+      "approved_by": "operator",
+      "blast_radius": {
+        "cluster_scoped": true,
+        "deletions": 0,
+        "estimated_resources": 3,
+        "namespaces": [
+          "grafana"
+        ],
+        "resource_kinds": [
+          "namespace",
+          "deployment",
+          "service"
+        ],
+        "summary": "3 resource type(s), 1 namespace(s), cluster-scoped changes"
+      },
+      "conversation_id": "028cec76-617c-41d5-baf0-683fd81be1ef",
+      "created_at": "2026-06-13T08:47:29Z",
+      "edit_history": [],
+      "expires_at": "2026-06-13T12:47:29Z",
+      "file_name": "install-the-grafana-operator-from-operatorhub-in-n.yml",
+      "github_push": {
+        "branch": "main",
+        "commit_sha": "473601a3015d29e10503fbc70141b74c0f6ce891",
+        "commit_url": "https://github.com/brandonjumperblckbx/aap-playbooks/commit/473601a3015d29e10503fbc70141b74c0f6ce891",
+        "created": false,
+        "file_path": "install-the-grafana-operator-from-operatorhub-in-n.yml",
+        "repo": "brandonjumperblckbx/aap-playbooks",
+        "timestamp": "2026-06-13T08:48:20Z",
+        "updated": true
+      },
+      "id": "apv-c7c70910bbfd",
+      "intent": "Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and configure a datasource pointing to OpenShift Prometheus at https://thanos-querier.openshift-monitoring.svc:9091",
+      "playbook_id": "pb-8e0e76cd3ed1",
+      "rejection": null,
+      "requested_by": "operator",
+      "risk_level": "medium",
+      "status": "approved",
+      "updated_at": "2026-06-13T08:48:20Z",
+      "validation": {
+        "checks_run": [
+          "yaml_syntax",
+          "ansible_structure",
+          "security_scan",
+          "best_practices"
+        ],
+        "issues": [],
+        "valid": true,
+        "warnings": [
+          {
+            "check": "best_practices",
+            "message": "No tags defined \u2014 consider adding tags for selective execution",
+            "severity": "info"
+          }
+        ]
+      },
+      "yaml_content": "---\n- name: Install Grafana Operator and Configure Instance\n  hosts: localhost\n  connection: local\n  gather_facts: false\n  tasks:\n\n    - name: Create grafana namespace\n      kubernetes.core.k8s:\n        name: grafana\n        api_version: v1\n        kind: Namespace\n        state: present\n\n    - name: Create OperatorGroup for Grafana operator\n      kubernetes.core.k8s:\n        definition:\n          apiVersion: operators.coreos.com/v1\n          kind: OperatorGroup\n          metadata:\n            name: grafana-operator-group\n            namespace: grafana\n          spec:\n            targetNamespaces:\n              - grafana\n        state: present\n\n    - name: Create Subscription for Grafana operator\n      kubernetes.core.k8s:\n        definition:\n          apiVersion: operators.coreos.com/v1alpha1\n          kind: Subscription\n          metadata:\n            name: grafana-operator\n            namespace: grafana\n          spec:\n            channel: v4\n            name: grafana-operator\n            source: community-operators\n            sourceNamespace: openshift-marketplace\n        state: present\n\n    - name: Wait for Grafana operator to be ready\n      kubernetes.core.k8s_info:\n        api_version: apps/v1\n        kind: Deployment\n        name: grafana-operator-controller-manager\n        namespace: grafana\n        wait: true\n        wait_condition:\n          type: Available\n          status: \"True\"\n        wait_timeout: 300\n\n    - name: Create Grafana instance\n      kubernetes.core.k8s:\n        definition:\n          apiVersion: integreatly.org/v1alpha1\n          kind: Grafana\n          metadata:\n            name: grafana-instance\n            namespace: grafana\n          spec:\n            config:\n              auth:\n                disable_login_form: false\n              security:\n                admin_user: admin\n                admin_password: admin123\n            dashboardLabelSelector:\n              - matchExpressions:\n                  - key: app\n                    operator: In\n                    values:\n                      - grafana\n        state: present\n\n    - name: Wait for Grafana instance to be ready\n      kubernetes.core.k8s_info:\n        api_version: integreatly.org/v1alpha1\n        kind: Grafana\n        name: grafana-instance\n        namespace: grafana\n        wait: true\n        wait_condition:\n          type: Ready\n          status: \"True\"\n        wait_timeout: 300\n\n    - name: Create Prometheus datasource\n      kubernetes.core.k8s:\n        definition:\n          apiVersion: integreatly.org/v1alpha1\n          kind: GrafanaDataSource\n          metadata:\n            name: prometheus-datasource\n            namespace: grafana\n          spec:\n            grafana:\n              name: grafana-instance\n              namespace: grafana\n            datasources:\n              - name: Prometheus\n                type: prometheus\n                url: https://thanos-querier.openshift-monitoring.svc:9091\n                access: proxy\n                isDefault: true\n                jsonData:\n                  httpHeaderName1: Authorization\n                secureJsonData:\n                  httpHeaderValue1: Bearer\n        state: present\n\n    - name: Verify Grafana datasource creation\n      kubernetes.core.k8s_info:\n        api_version: integreatly.org/v1alpha1\n        kind: GrafanaDataSource\n        name: prometheus-datasource\n        namespace: grafana\n      register: datasource_status\n\n    - name: Display Grafana service information\n      kubernetes.core.k8s_info:\n        api_version: v1\n        kind: Service\n        namespace: grafana\n        label_selectors:\n          - app=grafana\n      register: grafana_service"
+    },
+    {
+      "aap_execution": null,
+      "approved_at": "2026-06-13T08:26:06Z",
+      "approved_by": "operator",
+      "blast_radius": {
+        "cluster_scoped": true,
+        "deletions": 0,
+        "estimated_resources": 1,
+        "namespaces": [],
+        "resource_kinds": [
+          "namespace"
+        ],
+        "summary": "1 resource type(s), cluster-scoped changes"
+      },
+      "conversation_id": "6f0e31be-e18b-47d0-aea3-ab6f6a60b87c",
+      "created_at": "2026-06-13T08:25:24Z",
+      "edit_history": [],
+      "expires_at": "2026-06-13T16:25:24Z",
+      "file_name": "install-the-grafana-operator-from-operatorhub-in-n.yml",
+      "github_push": {
+        "branch": "main",
+        "commit_sha": "c8682a5fb4dce0962f77835e0d8f30398df6eba8",
+        "commit_url": "https://github.com/brandonjumperblckbx/aap-playbooks/commit/c8682a5fb4dce0962f77835e0d8f30398df6eba8",
+        "created": true,
+        "file_path": "install-the-grafana-operator-from-operatorhub-in-n.yml",
+        "repo": "brandonjumperblckbx/aap-playbooks",
+        "timestamp": "2026-06-13T08:26:07Z",
+        "updated": false
+      },
+      "id": "apv-1b22df1a4cfa",
+      "intent": "Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and configure a datasource pointing to OpenShift Prometheus at https://thanos-querier.openshift-monitoring.svc:9091",
+      "playbook_id": "pb-ec6f20018faf",
+      "rejection": null,
+      "requested_by": "operator",
+      "risk_level": "low",
+      "status": "approved",
+      "updated_at": "2026-06-13T08:26:07Z",
+      "validation": {
+        "checks_run": [
+          "yaml_syntax",
+          "ansible_structure",
+          "security_scan",
+          "best_practices"
+        ],
+        "issues": [],
+        "valid": true,
+        "warnings": [
+          {
+            "check": "best_practices",
+            "message": "No tags defined \u2014 consider adding tags for selective execution",
+            "severity": "info"
+          }
+        ]
+      },
+      "yaml_content": "---\n- name: Install the Grafana operator from OperatorHub in namespace grafana, create a Gra\n  hosts: localhost\n  connection: local\n  gather_facts: false\n  tasks:\n    - name: TODO \u2014 implement generated task\n      ansible.builtin.debug:\n        msg: \"Playbook generated for intent: Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and c\""
+    },
+    {
+      "aap_execution": null,
+      "approved_at": null,
+      "approved_by": null,
+      "blast_radius": {
+        "cluster_scoped": true,
+        "deletions": 0,
+        "estimated_resources": 1,
+        "namespaces": [],
+        "resource_kinds": [
+          "namespace"
+        ],
+        "summary": "1 resource type(s), cluster-scoped changes"
+      },
+      "conversation_id": "87a89423-28a4-4b09-91d6-14dc82222dd8",
+      "created_at": "2026-06-13T08:25:10Z",
+      "edit_history": [],
+      "expires_at": "2026-06-13T16:25:10Z",
+      "file_name": "install-the-grafana-operator-from-operatorhub-in-n.yml",
+      "github_push": null,
+      "id": "apv-bdae3d286c43",
+      "intent": "Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and configure a datasource pointing to OpenShift Prometheus at https://thanos-querier.openshift-monitoring.svc:9091",
+      "playbook_id": "pb-1ac13234d91d",
+      "rejection": null,
+      "requested_by": "operator",
+      "risk_level": "low",
+      "status": "pending_approval",
+      "updated_at": "2026-06-13T08:25:10Z",
+      "validation": {
+        "checks_run": [
+          "yaml_syntax",
+          "ansible_structure",
+          "security_scan",
+          "best_practices"
+        ],
+        "issues": [],
+        "valid": true,
+        "warnings": [
+          {
+            "check": "best_practices",
+            "message": "No tags defined \u2014 consider adding tags for selective execution",
+            "severity": "info"
+          }
+        ]
+      },
+      "yaml_content": "---\n- name: Install the Grafana operator from OperatorHub in namespace grafana, create a Gra\n  hosts: localhost\n  connection: local\n  gather_facts: false\n  tasks:\n    - name: TODO \u2014 implement generated task\n      ansible.builtin.debug:\n        msg: \"Playbook generated for intent: Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and c\""
+    },
+    {
+      "aap_execution": null,
+      "approved_at": "2026-06-13T08:02:09Z",
+      "approved_by": "operator",
+      "blast_radius": {
+        "cluster_scoped": true,
+        "deletions": 0,
+        "estimated_resources": 1,
+        "namespaces": [],
+        "resource_kinds": [
+          "namespace"
+        ],
+        "summary": "1 resource type(s), cluster-scoped changes"
+      },
+      "conversation_id": "be1b4ce4-a3f7-43a1-bd88-80a4a7af4130",
+      "created_at": "2026-06-13T07:51:50Z",
+      "edit_history": [],
+      "expires_at": "2026-06-13T15:51:50Z",
+      "file_name": "install-the-grafana-operator-from-operatorhub-in-n.yml",
+      "github_push": {
+        "branch": "main",
+        "commit_sha": "960738ca4dbc401bdcdb122c358b0507f244b0f8",
+        "commit_url": "https://github.com/brandonjumperblckbx/aap-playbooks/commit/960738ca4dbc401bdcdb122c358b0507f244b0f8",
+        "created": false,
+        "file_path": "install-the-grafana-operator-from-operatorhub-in-n.yml",
+        "repo": "brandonjumperblckbx/aap-playbooks",
+        "timestamp": "2026-06-13T08:02:10Z",
+        "updated": true
+      },
+      "id": "apv-bfe09206ff40",
+      "intent": "Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and configure a datasource pointing to the OpenShift built-in Prometheus at https://thanos-querier.openshift-monitoring.svc:9091",
+      "playbook_id": "pb-214f4beb85cc",
+      "rejection": null,
+      "requested_by": "operator",
+      "risk_level": "low",
+      "status": "approved",
+      "updated_at": "2026-06-13T08:02:10Z",
+      "validation": {
+        "checks_run": [
+          "yaml_syntax",
+          "ansible_structure",
+          "security_scan",
+          "best_practices"
+        ],
+        "issues": [],
+        "valid": true,
+        "warnings": [
+          {
+            "check": "best_practices",
+            "message": "No tags defined \u2014 consider adding tags for selective execution",
+            "severity": "info"
+          }
+        ]
+      },
+      "yaml_content": "---\n- name: Install the Grafana operator from OperatorHub in namespace grafana, create a Gra\n  hosts: localhost\n  connection: local\n  gather_facts: false\n  tasks:\n    - name: TODO \u2014 implement generated task\n      ansible.builtin.debug:\n        msg: \"Playbook generated for intent: Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and c\""
+    },
+    {
+      "aap_execution": null,
+      "approved_at": "2026-06-13T07:39:06Z",
+      "approved_by": "operator",
+      "blast_radius": {
+        "cluster_scoped": true,
+        "deletions": 0,
+        "estimated_resources": 3,
+        "namespaces": [
+          "grafana"
+        ],
+        "resource_kinds": [
+          "namespace",
+          "deployment",
+          "configmap"
+        ],
+        "summary": "3 resource type(s), 1 namespace(s), cluster-scoped changes"
+      },
+      "conversation_id": "55f4b2e8-26e7-434f-9cd1-5cc2b0a3ed8b",
+      "created_at": "2026-06-13T07:31:47Z",
+      "edit_history": [],
+      "expires_at": "2026-06-13T11:31:47Z",
+      "file_name": "install-the-grafana-operator-from-operatorhub-in-n.yml",
+      "github_push": {
+        "branch": "main",
+        "commit_sha": "ea5f2eee73f0218349794da9a3471c4fef993597",
+        "commit_url": "https://github.com/brandonjumperblckbx/aap-playbooks/commit/ea5f2eee73f0218349794da9a3471c4fef993597",
+        "created": true,
+        "file_path": "install-the-grafana-operator-from-operatorhub-in-n.yml",
+        "repo": "brandonjumperblckbx/aap-playbooks",
+        "timestamp": "2026-06-13T07:39:07Z",
+        "updated": false
+      },
+      "id": "apv-7199ce9b0932",
+      "intent": "Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and configure a datasource pointing to the OpenShift built-in Prometheus at https://thanos-querier.openshift-monitoring.svc:9091",
+      "playbook_id": "pb-f20e632a9a51",
+      "rejection": null,
+      "requested_by": "operator",
+      "risk_level": "medium",
+      "status": "approved",
+      "updated_at": "2026-06-13T07:39:07Z",
+      "validation": {
+        "checks_run": [
+          "yaml_syntax",
+          "ansible_structure",
+          "security_scan",
+          "best_practices"
+        ],
+        "issues": [
+          {
+            "check": "yaml_syntax",
+            "message": "Invalid YAML: mapping values are not allowed here\n  in \"<unicode string>\", line 120, column 103:\n     ... _yaml('datasources') == [{'name': 'Prometheus', 'type': 'prometh ... \n                                      ",
+            "severity": "error"
+          }
+        ],
+        "valid": false,
+        "warnings": [
+          {
+            "check": "best_practices",
+            "message": "No tags defined \u2014 consider adding tags for selective execution",
+            "severity": "info"
+          }
+        ]
+      },
+      "yaml_content": "---\n- name: Install Grafana Operator\n  hosts: localhost\n  connection: local\n  gather_facts: no\n  tasks:\n    - name: Create namespace for Grafana operator\n      kubernetes.core.k8s:\n        api_version: v1\n        kind: Namespace\n        metadata:\n          name: grafana\n      register: namespace\n\n    - name: Validate namespace creation\n      kubernetes.core.k8s_info:\n        api_version: v1\n        kind: Namespace\n        fieldselector:\n          metadata.name: grafana\n      register: validate_namespace\n      until: namespace.metadata.name == 'grafana'\n      retries: 5\n      delay: 5\n\n    - name: Create Grafana operator deployment\n      kubernetes.core.k8s:\n        api_version: apps/v1\n        kind: Deployment\n        metadata:\n          namespace: grafana\n          name: grafana-operator\n        spec:\n          replicas: 1\n          selector:\n            matchLabels:\n              app: grafana-operator\n          template:\n            metadata:\n              labels:\n                app: grafana-operator\n            spec:\n              containers:\n              - name: operator\n                image: grafana/operator:v5.3.2\n                args:\n                - install\n\n    - name: Validate deployment creation\n      kubernetes.core.k8s_info:\n        api_version: apps/v1\n        kind: Deployment\n        fieldselector:\n          metadata.name: grafana-operator\n          namespace: grafana\n      register: validate_deployment\n      until: validate_deployment.items[0].status.availableReplicas == 1\n      retries: 5\n      delay: 5\n\n    - name: Create Grafana instance\n      kubernetes.core.k8s:\n        api_version: apps/v1\n        kind: Deployment\n        metadata:\n          namespace: grafana\n          name: grafana\n        spec:\n          replicas: 1\n          selector:\n            matchLabels:\n              app: grafana\n          template:\n            metadata:\n              labels:\n                app: grafana\n            spec:\n              containers:\n              - name: server\n                image: grafana/grafana:v6.0.4\n                args:\n                - --infra-prometheus.url=https://thanos-querier.openshift-monitoring.svc:9091\n\n    - name: Validate instance creation\n      kubernetes.core.k8s_info:\n        api_version: apps/v1\n        kind: Deployment\n        fieldselector:\n          metadata.name: grafana\n          namespace: grafana\n      register: validate_instance\n      until: validate_instance.items[0].status.availableReplicas == 1\n      retries: 5\n      delay: 5\n\n    - name: Create datasource for Grafana\n      kubernetes.core.k8s:\n        api_version: v1\n        kind: ConfigMap\n        metadata:\n          namespace: grafana\n          name: grafana-datasource\n        data:\n          datasources.yaml: |\n            apiVersion: 1\n            datasources:\n            - name: Prometheus\n              type: prometheus\n              url: https://thanos-querier.openshift-monitoring.svc:9091\n              isDefault: true\n\n    - name: Validate datasource creation\n      kubernetes.core.k8s_info:\n        api_version: v1\n        kind: ConfigMap\n        fieldselector:\n          metadata.name: grafana-datasource\n          namespace: grafana\n      register: validate_datasource\n      until: validate_datasource.items[0].data.datasources.yaml | from_yaml('datasources') == [{'name': 'Prometheus', 'type': 'prometheus', 'url': 'https://thanos-querier.openshift-monitoring.svc:9091'}]\n      retries: 5\n      delay: 5"
+    },
+    {
+      "aap_execution": null,
+      "approved_at": "2026-06-13T07:12:51Z",
+      "approved_by": "operator",
+      "blast_radius": {
+        "cluster_scoped": true,
+        "deletions": 0,
+        "estimated_resources": 1,
+        "namespaces": [
+          "arnie-test"
+        ],
+        "resource_kinds": [
+          "namespace"
+        ],
+        "summary": "1 resource type(s), 1 namespace(s), cluster-scoped changes"
+      },
+      "conversation_id": "7a7005b1-dc9b-466f-b8e4-f8122978dcde",
+      "created_at": "2026-06-13T07:10:21Z",
+      "edit_history": [],
+      "expires_at": "2026-06-13T15:10:21Z",
+      "file_name": "create-a-namespace-called-arnie-test-with-resource.yml",
+      "github_push": {
+        "branch": "main",
+        "commit_sha": "6fb0ea1ee4c4f193a5e44fe177d32854da09b6c1",
+        "commit_url": "https://github.com/brandonjumperblckbx/aap-playbooks/commit/6fb0ea1ee4c4f193a5e44fe177d32854da09b6c1",
+        "created": true,
+        "file_path": "create-a-namespace-called-arnie-test-with-resource.yml",
+        "repo": "brandonjumperblckbx/aap-playbooks",
+        "timestamp": "2026-06-13T07:12:52Z",
+        "updated": false
+      },
+      "id": "apv-4215dabfc02a",
+      "intent": "Create a namespace called arnie-test with resource quotas",
+      "playbook_id": "pb-53b1ef26f823",
+      "rejection": null,
+      "requested_by": "operator",
+      "risk_level": "low",
+      "status": "approved",
+      "updated_at": "2026-06-13T07:12:52Z",
+      "validation": {
+        "checks_run": [
+          "yaml_syntax",
+          "ansible_structure",
+          "security_scan",
+          "best_practices"
+        ],
+        "issues": [],
+        "valid": true,
+        "warnings": [
+          {
+            "check": "best_practices",
+            "message": "Consider adding 'gather_facts: false' for localhost plays",
+            "severity": "info"
+          },
+          {
+            "check": "best_practices",
+            "message": "No tags defined \u2014 consider adding tags for selective execution",
+            "severity": "info"
+          }
+        ]
+      },
+      "yaml_content": "---\n- name: Create arnie-test Namespace with Resource Quotas\n  hosts: localhost\n  connection: local\n\n  tasks:\n  - name: Create Namespace\n    kubernetes.core.k8s:\n      api_version: v1\n      kind: Namespace\n      metadata:\n        name: arnie-test\n      state: present\n\n  - name: Create CPU Resource Quota\n    kubernetes.core.k8s:\n      api_version: policy/v1beta1\n      kind: ResourceQuota\n      metadata:\n        namespace: arnie-test\n        name: cpu-quota\n      spec:\n        hard:\n          cpu: '2'\n      state: present\n\n  - name: Create Memory Resource Quota\n    kubernetes.core.k8s:\n      api_version: policy/v1beta1\n      kind: ResourceQuota\n      metadata:\n        namespace: arnie-test\n        name: memory-quota\n      spec:\n        hard:\n          memory: '2Gi'\n      state: present\n\n  - name: Validate Namespace and Resource Quotas existence\n    kubernetes.core.k8s_info:\n      api_version: v1\n      kind: Namespace\n      metadata:\n        name: arnie-test\n      register: namespace\n\n    kubernetes.core.k8s_info:\n      api_version: policy/v1beta1\n      kind: ResourceQuota\n      metadata:\n        namespace: arnie-test\n        name: cpu-quota\n      register: cpu_quota\n\n    kubernetes.core.k8s_info:\n      api_version: policy/v1beta1\n      kind: ResourceQuota\n      metadata:\n        namespace: arnie-test\n        name: memory-quota\n      register: memory_quota\n\n  - name: Fail on errors\n    assert:\n      that:\n        - namespace is defined\n        - cpu_quota is defined\n        - memory_quota is defined"
+    },
+    {
+      "aap_execution": null,
       "approved_at": null,
       "approved_by": null,
       "blast_radius": {
@@ -31,8 +611,8 @@
       "rejection": null,
       "requested_by": "operator",
       "risk_level": "medium",
-      "status": "pending_approval",
-      "updated_at": "2026-06-13T05:54:23Z",
+      "status": "expired",
+      "updated_at": "2026-06-13T10:45:46Z",
       "validation": {
         "checks_run": [
           "yaml_syntax",
@@ -74,6 +654,240 @@
     }
   ],
   "audit": [
+    {
+      "actor": "operator",
+      "approval_id": "apv-90800bcab369",
+      "created_at": "2026-06-13T16:02:46Z",
+      "event": "pushed",
+      "id": "549e7fc1-b07a-4f5b-9cb7-0070c2d26512",
+      "metadata": {},
+      "reason": "Pushed to GitHub: d87e6194"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-90800bcab369",
+      "created_at": "2026-06-13T16:02:45Z",
+      "event": "approved",
+      "id": "672eab55-c934-4a28-ad40-08460ec528f3",
+      "metadata": {},
+      "reason": "Approved via ARNIE UI"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-90800bcab369",
+      "created_at": "2026-06-13T16:02:34Z",
+      "event": "staged",
+      "id": "590ce925-5b83-487c-a776-7cc8e5a8f6cf",
+      "metadata": {},
+      "reason": "Playbook staged for approval: Install the Grafana operator in namespace grafana. Add a wait after creating the namespace to ensure"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-cd291607db1f",
+      "created_at": "2026-06-13T15:52:54Z",
+      "event": "staged",
+      "id": "f4440828-c3ad-4032-a8f5-39462e26ef02",
+      "metadata": {},
+      "reason": "Playbook staged for approval: Install the Grafana operator in namespace grafana. Add a wait after creating the namespace to ensure"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-df547dabcf2d",
+      "created_at": "2026-06-13T15:52:51Z",
+      "event": "approved",
+      "id": "73115096-7313-47a3-a953-807a89d2c218",
+      "metadata": {},
+      "reason": "Approved via ARNIE UI"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-df547dabcf2d",
+      "created_at": "2026-06-13T15:51:39Z",
+      "event": "staged",
+      "id": "4a5422e7-5f47-43fd-bc59-4f00b833e773",
+      "metadata": {},
+      "reason": "Playbook staged for approval: Install the Grafana operator in namespace grafana. Add a wait after creating the namespace to ensure"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-6b011255605b",
+      "created_at": "2026-06-13T10:45:46Z",
+      "event": "pushed",
+      "id": "5d89077b-c3bb-4cef-a411-10922b62fd74",
+      "metadata": {},
+      "reason": "Pushed to GitHub: a88158a9"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-6b011255605b",
+      "created_at": "2026-06-13T10:45:46Z",
+      "event": "approved",
+      "id": "202198ff-c768-4476-a1f4-d006041b2128",
+      "metadata": {},
+      "reason": "Approved via ARNIE UI"
+    },
+    {
+      "actor": "system",
+      "approval_id": "apv-55d3181f512e",
+      "created_at": "2026-06-13T10:45:46Z",
+      "event": "expired",
+      "id": "994ed4a2-e8a8-4e34-888b-69c62b5c295b",
+      "metadata": {},
+      "reason": "Approval window expired"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-6b011255605b",
+      "created_at": "2026-06-13T09:37:30Z",
+      "event": "staged",
+      "id": "98a51349-0f59-4757-9655-654c2f77b2ec",
+      "metadata": {},
+      "reason": "Playbook staged for approval: Create a Helm-based deployment of cert-manager from the Jetstack Helm repo"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-c7c70910bbfd",
+      "created_at": "2026-06-13T08:48:20Z",
+      "event": "pushed",
+      "id": "35bac191-a4c8-459d-a557-1c719fae0380",
+      "metadata": {},
+      "reason": "Pushed to GitHub: 473601a3"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-c7c70910bbfd",
+      "created_at": "2026-06-13T08:48:19Z",
+      "event": "approved",
+      "id": "1769cbe0-4e8f-4ef2-8e80-c654667c1449",
+      "metadata": {},
+      "reason": "Approved via ARNIE UI"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-c7c70910bbfd",
+      "created_at": "2026-06-13T08:47:29Z",
+      "event": "staged",
+      "id": "0808cd32-1a8a-438b-b1bf-99d99970660d",
+      "metadata": {},
+      "reason": "Playbook staged for approval: Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and c"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-1b22df1a4cfa",
+      "created_at": "2026-06-13T08:26:07Z",
+      "event": "pushed",
+      "id": "e1b1ebfa-bcdc-4474-bd03-925bb7298c7b",
+      "metadata": {},
+      "reason": "Pushed to GitHub: c8682a5f"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-1b22df1a4cfa",
+      "created_at": "2026-06-13T08:26:06Z",
+      "event": "approved",
+      "id": "573e6ddf-b5de-4674-9c89-b4aab3b88b4b",
+      "metadata": {},
+      "reason": "Approved via ARNIE UI"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-1b22df1a4cfa",
+      "created_at": "2026-06-13T08:25:24Z",
+      "event": "staged",
+      "id": "71102126-4435-4175-ae20-60d829042329",
+      "metadata": {},
+      "reason": "Playbook staged for approval: Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and c"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-bdae3d286c43",
+      "created_at": "2026-06-13T08:25:10Z",
+      "event": "staged",
+      "id": "16aedf31-17de-4fa3-8818-4ce5431c14e7",
+      "metadata": {},
+      "reason": "Playbook staged for approval: Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and c"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-bfe09206ff40",
+      "created_at": "2026-06-13T08:02:10Z",
+      "event": "pushed",
+      "id": "eeacc5f9-ee38-43ab-92ef-d2aadf582bde",
+      "metadata": {},
+      "reason": "Pushed to GitHub: 960738ca"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-bfe09206ff40",
+      "created_at": "2026-06-13T08:02:09Z",
+      "event": "approved",
+      "id": "8b447be9-2d5c-4da2-831a-d49be5c1245f",
+      "metadata": {},
+      "reason": "Approved via ARNIE UI"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-bfe09206ff40",
+      "created_at": "2026-06-13T07:51:50Z",
+      "event": "staged",
+      "id": "2419d75e-3173-4e26-acef-67dab1bc2c4a",
+      "metadata": {},
+      "reason": "Playbook staged for approval: Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and c"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-7199ce9b0932",
+      "created_at": "2026-06-13T07:39:07Z",
+      "event": "pushed",
+      "id": "a3dccd33-95e6-4a01-81bb-fe555f51e9b9",
+      "metadata": {},
+      "reason": "Pushed to GitHub: ea5f2eee"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-7199ce9b0932",
+      "created_at": "2026-06-13T07:39:06Z",
+      "event": "approved",
+      "id": "4bf950e2-5a6b-4745-b667-79fc8a79c5bb",
+      "metadata": {},
+      "reason": "Approved via ARNIE UI"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-7199ce9b0932",
+      "created_at": "2026-06-13T07:31:47Z",
+      "event": "staged",
+      "id": "b0520f92-a8ac-4ffe-ba15-d7e774990a1e",
+      "metadata": {},
+      "reason": "Playbook staged for approval: Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and c"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-4215dabfc02a",
+      "created_at": "2026-06-13T07:12:52Z",
+      "event": "pushed",
+      "id": "584832f7-67e8-4a78-8e31-7f3928fe3b2c",
+      "metadata": {},
+      "reason": "Pushed to GitHub: 6fb0ea1e"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-4215dabfc02a",
+      "created_at": "2026-06-13T07:12:51Z",
+      "event": "approved",
+      "id": "b30a2b0c-1cef-4754-a7ae-5357765f190a",
+      "metadata": {},
+      "reason": "Approved via ARNIE UI"
+    },
+    {
+      "actor": "operator",
+      "approval_id": "apv-4215dabfc02a",
+      "created_at": "2026-06-13T07:10:21Z",
+      "event": "staged",
+      "id": "de4b0cdf-7d6f-4811-b2b7-cf3ce617084d",
+      "metadata": {},
+      "reason": "Playbook staged for approval: Create a namespace called arnie-test with resource quotas"
+    },
     {
       "actor": "operator",
       "approval_id": "apv-55d3181f512e",

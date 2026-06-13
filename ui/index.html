@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="login-overlay" id="loginOverlay">
+<div class="login-overlay hidden" id="loginOverlay">
   <div class="login-card">
     <div class="login-logo">
       <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -72,6 +72,7 @@
         <option value="qwen2.5:7b">Qwen 2.5 7B</option>
         <option value="deepseek-r1:8b">DeepSeek R1</option>
         <option value="claude">Claude API</option>
+        <option value="codex">Codex API</option>
       </select>
     </div>
     <button class="icon-btn" id="settingsBtn" title="Settings">
@@ -110,14 +111,27 @@
 
   <!-- Sidebar (Chat only) -->
   <aside class="sidebar" id="sidebar">
+    <div class="sidebar-new-chat">
+      <button class="new-chat-btn" onclick="newChat()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Chat
+      </button>
+    </div>
     <div class="sidebar-section">
-      <div class="sidebar-heading">APPROVALS</div>
+      <div class="sidebar-heading">CONVERSATIONS</div>
+      <div id="conversationsList" class="sidebar-list">
+        <div class="sidebar-empty">Start a conversation</div>
+      </div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">APPROVALS <span class="sidebar-count" id="approvalCount" style="display:none">0</span></div>
       <div id="approvalsList" class="sidebar-list">
         <div class="sidebar-empty">No pending approvals</div>
       </div>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-heading">RECENT JOBS</div>
+      <div class="sidebar-heading">RECENT JOBS <span class="sidebar-count" id="jobCount" style="display:none">0</span></div>
       <div id="jobsList" class="sidebar-list">
         <div class="sidebar-empty">No recent jobs</div>
       </div>
@@ -282,6 +296,17 @@
             <div class="integration-status">Fallback enabled</div>
           </div>
           <div class="integration-dot online"></div>
+        </div>
+        <div class="integration-card">
+          <div class="integration-icon codex-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 17l6-6-6-6"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">OpenAI Codex</div>
+            <div class="integration-desc">AI coding agent — playbook generation & code review</div>
+            <div class="integration-status">GPT-5.5 Codex</div>
+          </div>
+          <div class="integration-dot offline"></div>
         </div>
         <div class="integration-card">
           <div class="integration-icon quay-icon">

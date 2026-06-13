@@ -1,0 +1,18 @@
+{
+  "conversation_id": "6f0e31be-e18b-47d0-aea3-ab6f6a60b87c",
+  "turns": [
+    {
+      "role": "user",
+      "content": "Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and configure a datasource pointing to OpenShift Prometheus at https://thanos-querier.openshift-monitoring.svc:9091",
+      "timestamp": "2026-06-13T08:22:54Z"
+    },
+    {
+      "role": "assistant",
+      "content": "I understand you want to: Install the Grafana operator from OperatorHub in namespace grafana, create a Grafana instance, and configure a datasource pointing to OpenShift Prometheus at https://thanos-querier.openshift-monitoring.svc:9091\n\nThe AI model is currently unavailable (), but I can still generate playbooks using templates. Would you like me to proceed with a template?",
+      "timestamp": "2026-06-13T08:22:54Z"
+    }
+  ],
+  "summary": "",
+  "created_at": "2026-06-13T08:22:54Z",
+  "updated_at": "2026-06-13T08:22:54Z"
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "trace_id": "tr-a3153a9768",
+    "message": "Create a namespace called arnie-test with resource quotas",
+    "response_length": 1730,
+    "actions_taken": [
+      "model_inference"
+    ],
+    "context_keys": [
+      "mode",
+      "product",
+      "capabilities"
+    ],
+    "timestamp": "2026-06-13T07:09:04Z"
+  }
+]

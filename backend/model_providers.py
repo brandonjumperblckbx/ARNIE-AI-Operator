@@ -19,6 +19,10 @@ def get_model_provider():
         from claude_service import ClaudeService
         return ClaudeService()
 
+    if provider == "codex":
+        from codex_service import CodexService
+        return CodexService()
+
     # Default: Ollama via ModelRouter
     from model_router import ModelRouter
     return ModelRouter()

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARNIE AI | BLCKBX Infrastructure Automation</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo-mark">A</div>
+    <div>
+      <div class="header-title">ARNIE AI</div>
+      <div class="header-subtitle">Ansible Remediation & Navigation Intelligence Engine</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill" id="githubStatus" title="GitHub">
+      <span class="status-dot offline"></span>
+      <span>GitHub</span>
+    </div>
+    <div class="status-pill" id="aapStatus" title="AAP">
+      <span class="status-dot offline"></span>
+      <span>AAP</span>
+    </div>
+    <div class="model-selector">
+      <select id="modelSelect">
+        <option value="llama3.1:8b">Llama 3.1 8B</option>
+        <option value="mistral:7b">Mistral 7B</option>
+        <option value="qwen2.5:7b">Qwen 2.5 7B</option>
+        <option value="deepseek-r1:8b">DeepSeek R1</option>
+        <option value="claude">Claude API</option>
+      </select>
+    </div>
+    <button class="icon-btn" id="settingsBtn" title="Settings">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ── Main Layout ── -->
+<div class="main-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">APPROVALS</div>
+      <div id="approvalsList" class="sidebar-list">
+        <div class="sidebar-empty">No pending approvals</div>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">RECENT JOBS</div>
+      <div id="jobsList" class="sidebar-list">
+        <div class="sidebar-empty">No recent jobs</div>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-brand">BLCKBX</div>
+      <div class="sidebar-version">ARNIE v1.0.0 • RMCP Engine</div>
+    </div>
+  </aside>
+
+  <!-- Chat Area -->
+  <main class="chat-area">
+
+    <!-- Welcome Screen -->
+    <div class="welcome" id="welcomeScreen">
+      <div class="welcome-logo">A</div>
+      <h1 class="welcome-title">ARNIE AI</h1>
+      <p class="welcome-sub">Describe your infrastructure needs. I'll generate the playbook.</p>
+      <div class="welcome-cards">
+        <div class="welcome-card" onclick="usePrompt('Create a namespace called staging with resource quotas and network policies')">
+          <div class="card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8m-4-4h8"/></svg>
+          </div>
+          <div class="card-text">Create a namespace with quotas and policies</div>
+        </div>
+        <div class="welcome-card" onclick="usePrompt('Deploy nginx with 3 replicas, a service, and an OpenShift route with TLS edge termination')">
+          <div class="card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <div class="card-text">Deploy an app with service and route</div>
+        </div>
+        <div class="welcome-card" onclick="usePrompt('Configure RBAC so the monitoring team has read-only access to all namespaces')">
+          <div class="card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <div class="card-text">Set up RBAC for monitoring access</div>
+        </div>
+        <div class="welcome-card" onclick="usePrompt('Scale the production database StatefulSet to 3 replicas and add 100Gi persistent storage')">
+          <div class="card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="card-text">Scale and add storage to a StatefulSet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages" id="messages"></div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+      <div class="input-container">
+        <textarea
+          id="chatInput"
+          placeholder="Describe what you want to automate..."
+          rows="1"
+          autocomplete="off"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+      <div class="input-footer">
+        ARNIE generates Ansible playbooks for review before execution. Always verify before approving.
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Playbook Preview Modal -->
+<div class="modal-overlay" id="playbookModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Playbook Preview</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <pre class="playbook-preview"><code id="modalPlaybook"></code></pre>
+      <div class="modal-meta" id="modalMeta"></div>
+    </div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

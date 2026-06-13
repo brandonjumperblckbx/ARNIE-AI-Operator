@@ -1,0 +1,87 @@
+{
+  "approvals": [
+    {
+      "aap_execution": null,
+      "approved_at": null,
+      "approved_by": null,
+      "blast_radius": {
+        "cluster_scoped": true,
+        "deletions": 0,
+        "estimated_resources": 4,
+        "namespaces": [
+          "staging"
+        ],
+        "resource_kinds": [
+          "namespace",
+          "service",
+          "networkpolicy",
+          "ingress"
+        ],
+        "summary": "4 resource type(s), 1 namespace(s), cluster-scoped changes"
+      },
+      "conversation_id": "3d624007-e763-4b60-a7f9-2e4d2e2b5d00",
+      "created_at": "2026-06-13T05:54:23Z",
+      "edit_history": [],
+      "expires_at": "2026-06-13T09:54:23Z",
+      "file_name": "create-a-namespace-called-staging-with-resource-qu.yml",
+      "github_push": null,
+      "id": "apv-55d3181f512e",
+      "intent": "Create a namespace called staging with resource quotas and network policies",
+      "playbook_id": "pb-8e0abff876a5",
+      "rejection": null,
+      "requested_by": "operator",
+      "risk_level": "medium",
+      "status": "pending_approval",
+      "updated_at": "2026-06-13T05:54:23Z",
+      "validation": {
+        "checks_run": [
+          "yaml_syntax",
+          "ansible_structure",
+          "security_scan",
+          "best_practices"
+        ],
+        "issues": [],
+        "valid": true,
+        "warnings": [
+          {
+            "check": "ansible_structure",
+            "message": "Task 5 has no 'name' field",
+            "severity": "warning"
+          },
+          {
+            "check": "ansible_structure",
+            "message": "Task 7 has no 'name' field",
+            "severity": "warning"
+          },
+          {
+            "check": "ansible_structure",
+            "message": "Task 9 has no 'name' field",
+            "severity": "warning"
+          },
+          {
+            "check": "best_practices",
+            "message": "Consider adding 'gather_facts: false' for localhost plays",
+            "severity": "info"
+          },
+          {
+            "check": "best_practices",
+            "message": "No tags defined \u2014 consider adding tags for selective execution",
+            "severity": "info"
+          }
+        ]
+      },
+      "yaml_content": "---\n- name: Create Staging Namespace with Resource Quotas and Network Policies\n  hosts: localhost\n  connection: local\n\n  tasks:\n    - name: Create Namespace\n      kubernetes.core.k8s:\n        api_version: v1\n        kind: Namespace\n        namespace: staging\n        state: present\n\n    - name: Create Resource Quota for Staging Namespace\n      kubernetes.core.k8s:\n        api_version: policy/v1beta1\n        kind: ResourceQuota\n        namespace: staging\n        metadata:\n          name: staging-quota\n        spec:\n          hard:\n            pods: \"10\"\n            services: \"5\"\n\n    - name: Create Network Policy for Staging Namespace\n      kubernetes.core.k8s:\n        api_version: networking.k8s.io/v1\n        kind: NetworkPolicy\n        namespace: staging\n        metadata:\n          name: allow-traffic-from-internet\n        spec:\n          podSelector: {}\n          policyTypes:\n            - Ingress\n\n    - name: Validate Namespace Creation\n      kubernetes.core.k8s_info:\n        api_version: v1\n        kind: Namespace\n        namespace: staging\n      register: namespace\n\n    - debug:\n        msg: \"Namespace {{ namespace.namespace }} created\"\n\n    - name: Validate Resource Quota Creation\n      kubernetes.core.k8s_info:\n        api_version: policy/v1beta1\n        kind: ResourceQuota\n        namespace: staging\n        metadata:\n          name: staging-quota\n      register: quota\n\n    - debug:\n        msg: \"Resource Quota {{ quota.kind }} created\"\n\n    - name: Validate Network Policy Creation\n      kubernetes.core.k8s_info:\n        api_version: networking.k8s.io/v1\n        kind: NetworkPolicy\n        namespace: staging\n        metadata:\n          name: allow-traffic-from-internet\n      register: networkpolicy\n\n    - debug:\n        msg: \"Network Policy {{ networkpolicy.kind }} created\""
+    }
+  ],
+  "audit": [
+    {
+      "actor": "operator",
+      "approval_id": "apv-55d3181f512e",
+      "created_at": "2026-06-13T05:54:23Z",
+      "event": "staged",
+      "id": "af576032-1754-474c-8ff6-21fa6b9cbc95",
+      "metadata": {},
+      "reason": "Playbook staged for approval: Create a namespace called staging with resource quotas and network policies"
+    }
+  ]
+}

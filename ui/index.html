@@ -8,13 +8,51 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="10" rx="2"/>
+        <circle cx="12" cy="5" r="2"/>
+        <line x1="12" y1="7" x2="12" y2="11"/>
+        <circle cx="8" cy="16" r="1.5" fill="white" stroke="none"/>
+        <circle cx="16" cy="16" r="1.5" fill="white" stroke="none"/>
+      </svg>
+    </div>
+    <h2 class="login-title">ARNIE AI</h2>
+    <p class="login-sub">Sign in to your BLCKBX account</p>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="you@company.com" autocomplete="email">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-footer">
+      Don't have an account? <a href="#" onclick="showSignup()">Create one</a>
+    </div>
+  </div>
+</div>
 
 <!-- ── Header ── -->
 <header class="header">
   <div class="header-left">
-    <div class="logo-mark">A</div>
+    <div class="logo-mark">
+      <svg class="robot-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="10" rx="2"/>
+        <circle cx="12" cy="5" r="2"/>
+        <line x1="12" y1="7" x2="12" y2="11"/>
+        <line x1="8" y1="16" x2="8" y2="16"/>
+        <line x1="16" y1="16" x2="16" y2="16"/>
+        <circle cx="8" cy="16" r="1" fill="white" stroke="none"/>
+        <circle cx="16" cy="16" r="1" fill="white" stroke="none"/>
+      </svg>
+    </div>
     <div>
-      <div class="header-title">ARNIE AI</div>
+      <div class="header-title">ARNIE <span class="header-ai">AI</span></div>
       <div class="header-subtitle">Ansible Remediation & Navigation Intelligence Engine</div>
     </div>
   </div>
@@ -42,10 +80,35 @@
   </div>
 </header>
 
+<!-- ── Tab Navigation ── -->
+<nav class="tab-nav">
+  <button class="tab active" data-tab="chat" onclick="switchTab('chat')">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    Chat
+  </button>
+  <button class="tab" data-tab="library" onclick="switchTab('library')">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    Library
+    <span class="tab-badge">50</span>
+  </button>
+  <button class="tab" data-tab="playbooks" onclick="switchTab('playbooks')">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Playbooks
+  </button>
+  <button class="tab" data-tab="integrations" onclick="switchTab('integrations')">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Integrations
+  </button>
+  <button class="tab" data-tab="audit" onclick="switchTab('audit')">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    Audit
+  </button>
+</nav>
+
 <!-- ── Main Layout ── -->
 <div class="main-layout">
 
-  <!-- Sidebar -->
+  <!-- Sidebar (Chat only) -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-heading">APPROVALS</div>
@@ -60,69 +123,192 @@
       </div>
     </div>
     <div class="sidebar-footer">
-      <div class="sidebar-brand">BLCKBX</div>
-      <div class="sidebar-version">ARNIE v1.0.0 • RMCP Engine</div>
+      <button class="settings-robot-btn" onclick="openSettings()" title="Settings & Account">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><line x1="12" y1="7" x2="12" y2="11"/><circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"/><line x1="1" y1="16" x2="3" y2="16"/><line x1="21" y1="16" x2="23" y2="16"/></svg>
+      </button>
+      <div class="sidebar-brand-row">
+        <span class="sidebar-brand">BLCKBX</span>
+        <span class="sidebar-version">ARNIE v1.0.0</span>
+      </div>
     </div>
   </aside>
 
-  <!-- Chat Area -->
-  <main class="chat-area">
-
-    <!-- Welcome Screen -->
-    <div class="welcome" id="welcomeScreen">
-      <div class="welcome-logo">A</div>
-      <h1 class="welcome-title">ARNIE AI</h1>
-      <p class="welcome-sub">Describe your infrastructure needs. I'll generate the playbook.</p>
-      <div class="welcome-cards">
-        <div class="welcome-card" onclick="usePrompt('Create a namespace called staging with resource quotas and network policies')">
-          <div class="card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8m-4-4h8"/></svg>
-          </div>
-          <div class="card-text">Create a namespace with quotas and policies</div>
+  <!-- ═══ TAB: Chat ═══ -->
+  <main class="tab-content active" id="tab-chat">
+    <div class="chat-area">
+      <div class="welcome" id="welcomeScreen">
+        <div class="welcome-logo">
+          <svg class="robot-icon-lg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="10" rx="2"/>
+            <circle cx="12" cy="5" r="2"/>
+            <line x1="12" y1="7" x2="12" y2="11"/>
+            <circle cx="8" cy="16" r="1.5" fill="white" stroke="none"/>
+            <circle cx="16" cy="16" r="1.5" fill="white" stroke="none"/>
+            <line x1="1" y1="16" x2="3" y2="16"/>
+            <line x1="21" y1="16" x2="23" y2="16"/>
+          </svg>
         </div>
-        <div class="welcome-card" onclick="usePrompt('Deploy nginx with 3 replicas, a service, and an OpenShift route with TLS edge termination')">
-          <div class="card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <h1 class="welcome-title">ARNIE AI</h1>
+        <p class="welcome-sub">Describe your infrastructure needs. I'll generate the playbook.</p>
+        <div class="welcome-cards">
+          <div class="welcome-card" onclick="usePrompt('Create a namespace called staging with resource quotas and network policies')">
+            <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8m-4-4h8"/></svg></div>
+            <div class="card-text">Create a namespace with quotas and policies</div>
           </div>
-          <div class="card-text">Deploy an app with service and route</div>
-        </div>
-        <div class="welcome-card" onclick="usePrompt('Configure RBAC so the monitoring team has read-only access to all namespaces')">
-          <div class="card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <div class="welcome-card" onclick="usePrompt('Deploy nginx with 3 replicas, a service, and an OpenShift route with TLS edge termination')">
+            <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+            <div class="card-text">Deploy an app with service and route</div>
           </div>
-          <div class="card-text">Set up RBAC for monitoring access</div>
-        </div>
-        <div class="welcome-card" onclick="usePrompt('Scale the production database StatefulSet to 3 replicas and add 100Gi persistent storage')">
-          <div class="card-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <div class="welcome-card" onclick="usePrompt('Configure RBAC so the monitoring team has read-only access to all namespaces')">
+            <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+            <div class="card-text">Set up RBAC for monitoring access</div>
           </div>
-          <div class="card-text">Scale and add storage to a StatefulSet</div>
+          <div class="welcome-card" onclick="usePrompt('Scale the production database StatefulSet to 3 replicas and add 100Gi persistent storage')">
+            <div class="card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+            <div class="card-text">Scale and add storage to a StatefulSet</div>
+          </div>
         </div>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="input-area">
+        <div class="input-container">
+          <textarea id="chatInput" placeholder="Describe what you want to automate..." rows="1" autocomplete="off"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div class="input-footer">ARNIE generates Ansible playbooks for review before execution. Always verify before approving.</div>
       </div>
     </div>
-
-    <!-- Messages -->
-    <div class="messages" id="messages"></div>
-
-    <!-- Input Area -->
-    <div class="input-area">
-      <div class="input-container">
-        <textarea
-          id="chatInput"
-          placeholder="Describe what you want to automate..."
-          rows="1"
-          autocomplete="off"
-        ></textarea>
-        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
-      </div>
-      <div class="input-footer">
-        ARNIE generates Ansible playbooks for review before execution. Always verify before approving.
-      </div>
-    </div>
-
   </main>
+
+  <!-- ═══ TAB: Library ═══ -->
+  <main class="tab-content" id="tab-library">
+    <div class="library-page">
+      <div class="library-header">
+        <div>
+          <h2 class="library-title">Playbook Library</h2>
+          <p class="library-sub">50 automation templates for OpenShift and Kubernetes infrastructure</p>
+        </div>
+        <div class="library-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="librarySearch" placeholder="Search templates..." oninput="filterLibrary()">
+        </div>
+      </div>
+      <div class="library-filters" id="libraryFilters"></div>
+      <div class="library-grid" id="libraryGrid"></div>
+    </div>
+  </main>
+
+  <!-- ═══ TAB: Playbooks ═══ -->
+  <main class="tab-content" id="tab-playbooks">
+    <div class="page-container">
+      <h2 class="page-title">Generated Playbooks</h2>
+      <p class="page-sub">History of all playbooks generated by ARNIE</p>
+      <div class="playbooks-table" id="playbooksTable">
+        <div class="table-empty">No playbooks generated yet. Start a conversation to create one.</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══ TAB: Integrations ═══ -->
+  <main class="tab-content" id="tab-integrations">
+    <div class="page-container">
+      <h2 class="page-title">Integrations</h2>
+      <p class="page-sub">Connected services powering ARNIE's automation pipeline</p>
+      <div class="integrations-grid">
+        <div class="integration-card" id="int-github">
+          <div class="integration-icon github-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.605-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">GitHub</div>
+            <div class="integration-desc">Playbook repository — commit and push</div>
+            <div class="integration-status" id="intGithubStatus">Not configured</div>
+          </div>
+          <div class="integration-dot offline" id="intGithubDot"></div>
+        </div>
+        <div class="integration-card" id="int-aap">
+          <div class="integration-icon aap-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">Ansible Automation Platform</div>
+            <div class="integration-desc">Project sync and job execution</div>
+            <div class="integration-status" id="intAapStatus">Not configured</div>
+          </div>
+          <div class="integration-dot offline" id="intAapDot"></div>
+        </div>
+        <div class="integration-card">
+          <div class="integration-icon openshift-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">OpenShift Cluster</div>
+            <div class="integration-desc">Target cluster for playbook execution</div>
+            <div class="integration-status">via AAP credential</div>
+          </div>
+          <div class="integration-dot online"></div>
+        </div>
+        <div class="integration-card">
+          <div class="integration-icon rmcp-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><line x1="12" y1="7" x2="12" y2="11"/><circle cx="8" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">RMCP Engine</div>
+            <div class="integration-desc">AI model routing and cognitive pipeline</div>
+            <div class="integration-status" id="intRmcpStatus">Active</div>
+          </div>
+          <div class="integration-dot online"></div>
+        </div>
+        <div class="integration-card">
+          <div class="integration-icon ollama-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">Ollama</div>
+            <div class="integration-desc">Local AI model inference (CPU)</div>
+            <div class="integration-status">llama3.1:8b</div>
+          </div>
+          <div class="integration-dot online"></div>
+        </div>
+        <div class="integration-card">
+          <div class="integration-icon claude-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">Claude API</div>
+            <div class="integration-desc">Anthropic Claude fallback provider</div>
+            <div class="integration-status">Fallback enabled</div>
+          </div>
+          <div class="integration-dot online"></div>
+        </div>
+        <div class="integration-card">
+          <div class="integration-icon quay-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <div class="integration-info">
+            <div class="integration-name">Red Hat Quay</div>
+            <div class="integration-desc">Container registry — execution environment images</div>
+            <div class="integration-status">quay-quay-quay-enterprise.apps.blckbx.server</div>
+          </div>
+          <div class="integration-dot online"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══ TAB: Audit ═══ -->
+  <main class="tab-content" id="tab-audit">
+    <div class="page-container">
+      <h2 class="page-title">Audit Trail</h2>
+      <p class="page-sub">Complete history of playbook generation, approvals, and execution</p>
+      <div class="audit-list" id="auditList">
+        <div class="table-empty">No audit events yet.</div>
+      </div>
+    </div>
+  </main>
+
 </div>
 
 <!-- Playbook Preview Modal -->
@@ -141,5 +327,101 @@
 </div>
 
 <script src="app.js"></script>
+<div class="modal-overlay" id="settingsModal">
+  <div class="settings-modal">
+    <div class="settings-header">
+      <div class="settings-header-left">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-light)" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><line x1="12" y1="7" x2="12" y2="11"/><circle cx="8" cy="16" r="1" fill="var(--accent-light)" stroke="none"/><circle cx="16" cy="16" r="1" fill="var(--accent-light)" stroke="none"/></svg>
+        <span>Settings</span>
+      </div>
+      <button class="modal-close" onclick="closeSettings()">&times;</button>
+    </div>
+    <div class="settings-body">
+      <div class="settings-nav">
+        <button class="settings-nav-btn active" data-section="account" onclick="switchSettingsTab('account')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Account
+        </button>
+        <button class="settings-nav-btn" data-section="github" onclick="switchSettingsTab('github')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.605-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </button>
+        <button class="settings-nav-btn" data-section="aap" onclick="switchSettingsTab('aap')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          AAP
+        </button>
+        <button class="settings-nav-btn" data-section="cluster" onclick="switchSettingsTab('cluster')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Cluster
+        </button>
+        <button class="settings-nav-btn" data-section="ai" onclick="switchSettingsTab('ai')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><line x1="12" y1="7" x2="12" y2="11"/></svg>
+          AI Engine
+        </button>
+        <div class="settings-nav-spacer"></div>
+        <button class="settings-nav-btn logout-btn" onclick="doLogout()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sign Out
+        </button>
+      </div>
+      <div class="settings-content">
+        <div class="settings-section active" id="settings-account">
+          <h3 class="settings-section-title">Account</h3>
+          <div class="settings-form">
+            <div class="form-group"><label>Email</label><input type="email" id="settingsEmail" placeholder="you@company.com"></div>
+            <div class="form-group"><label>Name</label><input type="text" id="settingsName" placeholder="Your name"></div>
+            <div class="form-group"><label>Organization</label><input type="text" id="settingsOrg" placeholder="Company name"></div>
+            <button class="btn btn-approve" onclick="saveSettings('account')">Save Account</button>
+          </div>
+        </div>
+        <div class="settings-section" id="settings-github">
+          <h3 class="settings-section-title">GitHub Integration</h3>
+          <p class="settings-desc">Connect to a GitHub repository where ARNIE pushes approved playbooks.</p>
+          <div class="settings-form">
+            <div class="form-group"><label>Repository</label><input type="text" id="settingsGithubRepo" placeholder="owner/repo"></div>
+            <div class="form-group"><label>Personal Access Token</label><input type="password" id="settingsGithubToken" placeholder="ghp_xxxxxxxxxxxx"><span class="form-hint">Requires <code>repo</code> scope</span></div>
+            <div class="form-group"><label>Branch</label><input type="text" id="settingsGithubBranch" placeholder="main" value="main"></div>
+            <div class="form-group"><label>Playbook Directory</label><input type="text" id="settingsGithubDir" placeholder="(root) or playbooks/"><span class="form-hint">Subdirectory in repo for generated playbooks</span></div>
+            <div class="form-actions"><button class="btn btn-approve" onclick="saveSettings('github')">Save & Test</button><span class="form-status" id="githubTestStatus"></span></div>
+          </div>
+        </div>
+        <div class="settings-section" id="settings-aap">
+          <h3 class="settings-section-title">Ansible Automation Platform</h3>
+          <p class="settings-desc">Connect to AAP to sync projects and launch jobs from approved playbooks.</p>
+          <div class="settings-form">
+            <div class="form-group"><label>AAP URL</label><input type="url" id="settingsAapUrl" placeholder="https://192.168.1.253"></div>
+            <div class="form-group"><label>API Token</label><input type="password" id="settingsAapToken" placeholder="Bearer token"></div>
+            <div class="form-group"><label>Project ID</label><input type="text" id="settingsAapProject" placeholder="e.g. 3"></div>
+            <div class="form-group"><label>Job Template ID</label><input type="text" id="settingsAapTemplate" placeholder="e.g. 7"></div>
+            <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="settingsAapVerifySsl"> Verify SSL Certificate</label></div>
+            <div class="form-actions"><button class="btn btn-approve" onclick="saveSettings('aap')">Save & Test</button><span class="form-status" id="aapTestStatus"></span></div>
+          </div>
+        </div>
+        <div class="settings-section" id="settings-cluster">
+          <h3 class="settings-section-title">OpenShift / Kubernetes Cluster</h3>
+          <p class="settings-desc">Target cluster endpoint for validation.</p>
+          <div class="settings-form">
+            <div class="form-group"><label>API Endpoint</label><input type="url" id="settingsClusterUrl" placeholder="https://api.blckbx.server:6443"></div>
+            <div class="form-group"><label>Bearer Token</label><input type="password" id="settingsClusterToken" placeholder="Service account token"></div>
+            <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="settingsClusterVerifySsl"> Verify SSL Certificate</label></div>
+            <div class="form-actions"><button class="btn btn-approve" onclick="saveSettings('cluster')">Save</button></div>
+          </div>
+        </div>
+        <div class="settings-section" id="settings-ai">
+          <h3 class="settings-section-title">AI Engine Configuration</h3>
+          <p class="settings-desc">Configure the RMCP engine — model provider and inference settings.</p>
+          <div class="settings-form">
+            <div class="form-group"><label>Default Provider</label><select id="settingsAiProvider"><option value="ollama">Ollama (Local)</option><option value="claude">Claude API (Anthropic)</option></select></div>
+            <div class="form-group"><label>Ollama Base URL</label><input type="url" id="settingsOllamaUrl" placeholder="http://localhost:11434" value="http://localhost:11434"></div>
+            <div class="form-group"><label>Default Model</label><select id="settingsAiModel"><option value="llama3.1:8b">Llama 3.1 8B</option><option value="mistral:7b">Mistral 7B</option><option value="qwen2.5:7b">Qwen 2.5 7B</option><option value="deepseek-r1:8b">DeepSeek R1 8B</option></select></div>
+            <div class="form-group"><label>Anthropic API Key</label><input type="password" id="settingsClaudeKey" placeholder="sk-ant-xxxxxxxxxxxx"></div>
+            <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="settingsAiFallback" checked> Fall back to Claude when Ollama fails</label></div>
+            <div class="form-actions"><button class="btn btn-approve" onclick="saveSettings('ai')">Save</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

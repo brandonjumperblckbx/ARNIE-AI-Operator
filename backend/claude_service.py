@@ -18,8 +18,8 @@ class ClaudeService:
     """Claude API client implementing the RMCP model provider interface."""
 
     def __init__(self):
-        self.api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        self.model = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-20250514")
+        self.api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+        self.model = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6")
         self.max_tokens = int(os.environ.get("RMCP_MAX_TOKENS", "4096"))
         self.timeout = int(os.environ.get("RMCP_TIMEOUT", "120"))
         self.provider_name = "claude"

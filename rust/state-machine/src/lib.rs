@@ -3,6 +3,8 @@
 
 pub mod workflow;
 pub mod transitions;
+pub mod policy_ffi;
+pub mod governance;
 
 pub use workflow::{WorkflowState, WorkflowContext, PlaybookWorkflow};
 pub use transitions::{TransitionError, TransitionTrigger};

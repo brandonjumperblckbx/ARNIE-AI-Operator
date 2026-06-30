@@ -127,6 +127,7 @@ function switchTab(tabName) {
     // Show/hide sidebar (only for chat)
     const sidebar = document.getElementById('sidebar');
     sidebar.style.display = tabName === 'chat' ? 'flex' : 'none';
+    document.getElementById('floatingRobot').style.display = tabName === 'chat' ? 'none' : 'flex';
 
     // Load data for specific tabs
     if (tabName === 'audit') loadAudit();
@@ -170,7 +171,8 @@ async function sendMessage() {
         const data = await resp.json();
         conversationId = data.conversation_id;
         hideTyping();
-        if (data.playbook) { appendPlaybookMessage(data); }
+        if (data.response_type === 'operator_questions') { appendOperatorQuestions(data); }
+        else if (data.playbook) { appendPlaybookMessage(data); }
         else { appendMessage('agent', data.response); }
         loadApprovals();
     } catch (err) {
@@ -729,14 +731,27 @@ async function saveSettings(section) {
     if (section === 'ai') {
         const provider = document.getElementById('settingsAiProvider').value;
         const model = document.getElementById('settingsAiModel').value;
+        const claudeKey = (document.getElementById('settingsClaudeKey')?.value || '').trim();
+        const ollamaUrl = document.getElementById('settingsOllamaUrl')?.value || 'http://localhost:11434';
+        const fallback = document.getElementById('settingsAiFallback')?.checked ?? true;
         try {
-            await fetch(`${API_BASE}/ai/models/provider`, {
+            // Save the full AI config (this persists the key to settings.json)
+            const resp = await fetch(`${API_BASE}/settings/ai`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ provider, model }),
+                body: JSON.stringify({
+                    provider,
+                    model,
+                    claude_key: claudeKey,
+                    ollama_url: ollamaUrl,
+                    fallback,
+                }),
             });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+            // Keep the header dropdown in sync with the chosen provider
             document.getElementById('modelSelect').value = provider === 'claude' ? 'claude' : model;
-            alert('AI engine updated');
+            alert(`AI engine updated — active provider: ${data.active_provider || provider}`);
         } catch (e) { alert(`Save failed: ${e.message}`); }
     }
 
@@ -1103,4 +1118,191 @@ async function viewApprovalEdit(approvalId) {
         const data = await resp.json();
         openEditModal(approvalId, data.yaml_content || '');
     } catch(e) { console.error(e); }
+}// ══════════════════════════════════════════════════════════════════════
+// Operator Setup Flow — Conversational install & configure
+// Renders ARNIE's config questions as an inline form, collects answers,
+// posts to /ai/operator/answers, and shows the complete setup playbook.
+// Append this to the end of app.js.
+// ══════════════════════════════════════════════════════════════════════
+
+// Track the in-flight operator setup so answers tie back to the right conversation.
+let activeOperatorSetup = null;
+
+/**
+ * Called from the chat handler when a response has response_type === 'operator_questions'.
+ * Renders a polished form inline in the message stream.
+ */
+function appendOperatorQuestions(data) {
+    activeOperatorSetup = {
+        conversationId: data.conversation_id,
+        operator: data.operator_setup?.operator || 'operator',
+        questions: data.operator_setup?.questions || [],
+    };
+
+    const el = document.createElement('div');
+    el.className = 'message agent';
+    const setup = data.operator_setup || {};
+    const questions = setup.questions || [];
+
+    const fieldsHtml = questions.map((q, idx) => renderQuestionField(q, idx)).join('');
+
+    el.innerHTML = `
+        <div class="message-header">
+            <div class="message-avatar agent-avatar">🤖</div>
+            <div class="message-sender">ARNIE</div>
+        </div>
+        <div class="message-body">
+            <p>${formatContent(setup.intro || 'Let me configure this for you.')}</p>
+            <div class="operator-setup-card">
+                <div class="operator-setup-header">
+                    <span class="operator-setup-title">${escapeHtml(setup.operator || 'Operator setup')}</span>
+                    <span class="operator-setup-badge">${setup.grounded ? 'Verified' : 'Standard install'}</span>
+                </div>
+                <div class="operator-setup-fields">
+                    ${fieldsHtml}
+                </div>
+                <div class="operator-setup-actions">
+                    <button class="btn btn-approve" onclick="submitOperatorAnswers()">Build setup playbook</button>
+                    <button class="btn btn-edit" onclick="cancelOperatorSetup(this)">Cancel</button>
+                </div>
+            </div>
+        </div>`;
+    messagesEl.appendChild(el);
+    activeOperatorSetup.formEl = el;
+    scrollToBottom();
+}
+
+/**
+ * Render a single question as the right control for its type.
+ * Supports: text (default), bool (toggle), int (number), secret (text + generate).
+ */
+function renderQuestionField(q, idx) {
+    const fieldId = `op-field-${idx}`;
+    const label = escapeHtml(q.question);
+    const type = q.type || (q.secret ? 'secret' : 'text');
+
+    if (type === 'bool') {
+        const checked = q.default === true ? 'checked' : '';
+        return `
+            <div class="operator-field operator-field-toggle">
+                <label for="${fieldId}">${label}</label>
+                <label class="op-switch">
+                    <input type="checkbox" id="${fieldId}" data-field="${q.field}" data-type="bool" ${checked}>
+                    <span class="op-slider"></span>
+                </label>
+            </div>`;
+    }
+
+    if (type === 'int') {
+        return `
+            <div class="operator-field">
+                <label for="${fieldId}">${label}</label>
+                <input type="number" id="${fieldId}" data-field="${q.field}" data-type="int"
+                       value="${q.default ?? ''}" min="0">
+            </div>`;
+    }
+
+    if (type === 'secret') {
+        // Password-style with a "generate for me" affordance.
+        return `
+            <div class="operator-field">
+                <label for="${fieldId}">${label}</label>
+                <div class="operator-secret-row">
+                    <input type="text" id="${fieldId}" data-field="${q.field}" data-type="secret"
+                           placeholder="Leave blank to auto-generate">
+                    <button type="button" class="op-generate-btn" onclick="generateSecret('${fieldId}')">Generate</button>
+                </div>
+            </div>`;
+    }
+
+    // Default: text input, prefilled with default if present.
+    const defVal = (q.default && q.default !== '__generate__') ? escapeHtml(String(q.default)) : '';
+    return `
+        <div class="operator-field">
+            <label for="${fieldId}">${label}</label>
+            <input type="text" id="${fieldId}" data-field="${q.field}" data-type="text"
+                   value="${defVal}" placeholder="${escapeHtml(String(q.default ?? ''))}">
+        </div>`;
+}
+
+/** Fill a secret field with a generated value (client-side convenience). */
+function generateSecret(fieldId) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+    let out = '';
+    const arr = new Uint32Array(20);
+    crypto.getRandomValues(arr);
+    for (let i = 0; i < 20; i++) out += chars[arr[i] % chars.length];
+    input.value = out;
+    input.type = 'text';
+}
+
+/** Collect answers from the form and post them to the backend. */
+async function submitOperatorAnswers() {
+    if (!activeOperatorSetup) return;
+    const formEl = activeOperatorSetup.formEl;
+    const inputs = formEl.querySelectorAll('[data-field]');
+    const answers = {};
+
+    inputs.forEach(input => {
+        const field = input.dataset.field;
+        const type = input.dataset.type;
+        if (type === 'bool') {
+            answers[field] = input.checked;
+        } else if (type === 'int') {
+            if (input.value !== '') answers[field] = parseInt(input.value, 10);
+        } else {
+            const v = input.value.trim();
+            if (v !== '') answers[field] = v;
+        }
+    });
+
+    // Disable the form while building.
+    const actions = formEl.querySelector('.operator-setup-actions');
+    if (actions) actions.innerHTML = '<span class="form-status">Building your setup playbook…</span>';
+    showTyping();
+
+    try {
+        const resp = await fetch(`${API_BASE}/ai/operator/answers`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                conversation_id: activeOperatorSetup.conversationId,
+                answers,
+            }),
+        });
+        hideTyping();
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+
+        // Mark the form as submitted.
+        if (actions) actions.innerHTML = '<span class="form-status success">✓ Setup playbook built</span>';
+
+        // Show the assembled playbook using the existing playbook renderer.
+        if (data.playbook) {
+            appendPlaybookMessage({
+                response: data.response,
+                playbook: { ...data.playbook, approval_id: data.approval_id },
+            });
+        } else {
+            appendMessage('agent', data.response);
+        }
+        activeOperatorSetup = null;
+        loadApprovals();
+    } catch (err) {
+        hideTyping();
+        if (actions) actions.innerHTML = `<span class="form-status error">✗ ${escapeHtml(err.message)}</span>`;
+    }
+}
+
+/** Cancel an in-flight operator setup. */
+function cancelOperatorSetup(btn) {
+    const card = btn.closest('.operator-setup-card');
+    if (card) {
+        card.querySelector('.operator-setup-actions').innerHTML =
+            '<span class="form-status">Setup cancelled.</span>';
+        card.querySelectorAll('input, button').forEach(e => { if (e !== btn) e.disabled = true; });
+    }
+    activeOperatorSetup = null;
 }

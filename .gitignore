@@ -1,1 +1,20 @@
-backend/state/settings.json
+# Secrets & runtime state
+backend/state/
+
+# Python
+__pycache__/
+*.pyc
+
+# Compiled native libs
+*.so
+*.o
+*.a
+
+# Rust build output
+rust/*/target/
+
+# C++ build output
+cpp/*/build/
+
+# OS
+.DS_Store

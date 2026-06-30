@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ARNIE AI | BLCKBX Infrastructure Automation</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 <div class="login-overlay hidden" id="loginOverlay">
@@ -117,23 +117,25 @@
         New Chat
       </button>
     </div>
-    <div class="sidebar-section">
-      <div class="sidebar-heading">CONVERSATIONS</div>
-      <div id="conversationsList" class="sidebar-list">
-        <div class="sidebar-empty">Start a conversation</div>
+    <div class="sidebar-scroll">
+      <div class="sidebar-section">
+        <div class="sidebar-heading">CONVERSATIONS</div>
+        <div id="conversationsList" class="sidebar-list">
+          <div class="sidebar-empty">Start a conversation</div>
+        </div>
       </div>
-    </div>
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-section">
-      <div class="sidebar-heading">APPROVALS <span class="sidebar-count" id="approvalCount" style="display:none">0</span></div>
-      <div id="approvalsList" class="sidebar-list">
-        <div class="sidebar-empty">No pending approvals</div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section" id="approvalsSection">
+        <div class="sidebar-heading">APPROVALS <span class="sidebar-count" id="approvalCount" style="display:none">0</span></div>
+        <div id="approvalsList" class="sidebar-list">
+          <div class="sidebar-empty">No pending approvals</div>
+        </div>
       </div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-heading">RECENT JOBS <span class="sidebar-count" id="jobCount" style="display:none">0</span></div>
-      <div id="jobsList" class="sidebar-list">
-        <div class="sidebar-empty">No recent jobs</div>
+      <div class="sidebar-section">
+        <div class="sidebar-heading">RECENT JOBS <span class="sidebar-count" id="jobCount" style="display:none">0</span></div>
+        <div id="jobsList" class="sidebar-list">
+          <div class="sidebar-empty">No recent jobs</div>
+        </div>
       </div>
     </div>
     <div class="sidebar-footer">
@@ -351,7 +353,7 @@
   </div>
 </div>
 
-<script src="app.js"></script>
+<!-- Settings Modal -->
 <div class="modal-overlay" id="settingsModal">
   <div class="settings-modal">
     <div class="settings-header">
@@ -448,5 +450,19 @@
     </div>
   </div>
 </div>
+
+<button class="floating-robot-btn" id="floatingRobot" onclick="openSettings()" title="Settings & Account" style="display:none">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="11" width="18" height="10" rx="2"/>
+    <circle cx="12" cy="5" r="2"/>
+    <line x1="12" y1="7" x2="12" y2="11"/>
+    <circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"/>
+    <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"/>
+    <line x1="1" y1="16" x2="3" y2="16"/>
+    <line x1="21" y1="16" x2="23" y2="16"/>
+  </svg>
+</button>
+
+<script src="app.js"></script>
 </body>
 </html>
